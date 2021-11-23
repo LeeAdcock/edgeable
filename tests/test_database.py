@@ -54,3 +54,16 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(
             A.get_properties(), {"my_key": "my_value", "my_key_2": "my_value_2"}
         )
+
+    def test_persistance(self):
+        self.db.set_filename("./tests/graph.db")
+        A = self.db.get_node("A", {"my_key": "my_value"})
+        B = self.db.get_node("B", {"my_key_2": "my_value_2"})
+        A.attach(B)
+
+        self.db.save()
+        A.delete()
+        self.assertEqual(self.db.get_node_count(), 1)
+
+        self.db.load()
+        self.assertEqual(self.db.get_node_count(), 2)

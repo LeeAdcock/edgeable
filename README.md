@@ -1,4 +1,4 @@
-# QuickGraph
+# Edgeable
 
 *Edgeable was designed as an easy to use, in memory, peristable graph database. It is perfect for prototyping, exploring, and quick implementation in Python applications.* Nodes have one string identifier and an unlimited number of key:value properties. They are connected by directed or non-directed (default) edges. These edges can also have an unlimited number of key:value properties. Additional convenience capabilities, like route detection through the graph are built-in.
 
@@ -26,6 +26,7 @@ The `GraphDatabase` class represents the entire graph. Instances of `GraphDataba
 The `GraphDatabase(filename="graph.db")` constructor is used to create a graph database instance.  It optionally takes a filename to use when saving or loading the database to the file system.
 
 ##### Persistance
+- `set_filename(filename)` - As an alternative to setting in the constructor, the persistance file can be modified through this setter method.
 - `load()` - Load the database from the file system.
 - `save()` - Save the database to the file system.
 

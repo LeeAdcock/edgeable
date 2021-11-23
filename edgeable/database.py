@@ -1,5 +1,6 @@
 import pickle
 import logging
+import gzip
 
 from edgeable import GraphNode
 
@@ -10,6 +11,9 @@ logger = logging.getLogger("edgeable")
 class GraphDatabase:
     def __init__(self, filename="graph.db"):
         self.graph = {}
+        self.filename = filename
+
+    def set_filename(self, filename):
         self.filename = filename
 
     def get_nodes(self, criteria=lambda node: True):
@@ -42,9 +46,9 @@ class GraphDatabase:
         return sum([len(self.graph[node]) for node in self.graph])
 
     def load(self):
-        with open(self.filename, "rb") as f:
+        with gzip.open(self.filename, "rb") as f:
             self.graph = pickle.load(f)
 
     def save(self):
-        with open(self.filename, "wb") as f:
+        with gzip.open(self.filename, "wb") as f:
             pickle.dump(self.graph, f, protocol=pickle.DEFAULT_PROTOCOL)
