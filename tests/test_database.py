@@ -35,14 +35,15 @@ class TestDatabase(unittest.TestCase):
         B = self.db.get_node("B")
         A.attach(B)
 
-        self.assertEqual(self.db.get_edge_count(), 4)
+        self.assertEqual(self.db.get_edge_count(), 2)
 
     def test_get_nodes(self):
-        self.db.get_node("A")
+        A = self.db.get_node("A", {"flag": True})
         self.db.get_node("B")
 
-        self.assertEqual(len(self.db.get_nodes()), 2)
-        self.assertEqual(len(self.db.get_nodes(lambda node: node.get_id() == "A")), 1)
+        nodes = self.db.get_nodes(lambda node: node.get_property("flag"))
+        self.assertEqual(len(nodes), 1)
+        self.assertEqual(nodes[0], A)
 
     def test_add_node_with_properties(self):
         A = self.db.get_node("A", {"my_key": "my_value"})
@@ -56,14 +57,14 @@ class TestDatabase(unittest.TestCase):
         )
 
     def test_persistance(self):
-        self.db.set_filename("./tests/graph.db")
         A = self.db.get_node("A", {"my_key": "my_value"})
         B = self.db.get_node("B", {"my_key_2": "my_value_2"})
         A.attach(B)
 
         self.db.save()
         A.delete()
-        self.assertEqual(self.db.get_node_count(), 1)
+        B.delete()
+        self.assertEqual(self.db.get_node_count(), 0)
 
         self.db.load()
         self.assertEqual(self.db.get_node_count(), 2)

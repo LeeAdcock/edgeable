@@ -10,6 +10,8 @@ class GraphNode:
     def __init__(self, db, id):
         self._db = db
         self._id = id
+        self._properties = {}
+        self._edges = {}
 
     def __eq__(self, other):
         if isinstance(other, GraphNode):
@@ -31,21 +33,20 @@ class GraphNode:
         if destination.get_id() == self._id:
             return False
 
-        is_connected = destination.get_id() in self._db._graph[self._id]["connections"]
+        is_connected = destination.get_id() in self._edges
         if not is_connected:
             logger.info(
                 "attach '%s' -> '%s' (%s)", self._id, destination.get_id(), properties
             )
-            self._db._graph[self._id]["connections"][
-                destination.get_id()
-            ] = properties.copy()
+            edge = GraphEdge(
+                source=self, destination=destination, properties=properties
+            )
+            self._edges[destination.get_id()] = edge
             if not directed:
-                self._db._graph[destination.get_id()]["connections"][
-                    self._id
-                ] = properties.copy()
+                destination.attach(self, properties, directed=False)
         else:
-            self._db._graph[self._id]["connections"][destination.get_id()] = {
-                **self._db._graph[self._id]["connections"][destination.get_id()],
+            self._edges[destination.get_id()]._properties = {
+                **self._edges[destination.get_id()]._properties,
                 **properties,
             }
 
@@ -55,14 +56,12 @@ class GraphNode:
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
         if destination:
-            was_connected = (
-                destination.get_id() in self._db._graph[self._id]["connections"]
-            )
+            was_connected = destination.get_id() in self._edges
             if was_connected:
                 logger.info("detach '%s' from '%s'", self._id, destination.get_id())
-                del self._db._graph[self._id]["connections"][destination.get_id()]
+                del self._edges[destination.get_id()]
             if not directed:
-                del self._db._graph[destination.get_id()]["connections"][self._id]
+                del self._db._graph[destination.get_id()]._edges[self._id]
             return was_connected
         else:
             was_connected = False
@@ -81,35 +80,22 @@ class GraphNode:
     def set_property(self, key, value):
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
-        self._db._graph[self._id]["meta"][key] = value
+        self._properties[key] = value
 
     def get_property(self, key):
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
-        return (
-            self._db._graph[self._id]["meta"][key]
-            if key in self._db._graph[self._id]["meta"]
-            else None
-        )
+        print(self._properties)
+        return self._properties[key] if key in self._properties else None
 
     def get_properties(self):
-        return self._db._graph[self._id]["meta"].copy() if self._id in self._db._graph else {}
+        return self._properties.copy() if self._id in self._db._graph else {}
 
     # Returns a list of edges
     def get_edges(self, criteria=lambda edge: True):
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
-        return [
-            edge
-            for edge in [
-                GraphEdge(
-                    destination=GraphNode(self._db, id),
-                    source=self,
-                )
-                for id in self._db._graph[self._id]["connections"]
-            ]
-            if criteria(edge)
-        ]
+        return [edge for edge in self._edges.values() if criteria(edge)]
 
     # Returns an edge to the specified node
     def get_edge(self, destination):
@@ -150,13 +136,16 @@ class GraphNode:
         while len(q):
             node = q.popleft()
             for edge in node.get_edges():
-                destination_id = edge.get_destination().get_id()
+                destination = edge.get_destination()
                 if (
-                    destination_id not in dist
+                    destination.get_id() not in dist
                     and end.get_id() not in dist
-                    and not destination_id in skip
+                    and not destination.get_id() in skip
                 ):
-                    dist[destination_id] = [dist[node.get_id()], edge.get_destination()]
+                    dist[destination.get_id()] = [
+                        dist[node.get_id()],
+                        edge.get_destination(),
+                    ]
                     q.append(edge.get_destination())
 
         def flatten(route):

@@ -13,14 +13,11 @@ class GraphDatabase:
         self._graph = {}
         self._filename = filename
 
-    def set_filename(self, filename):
-        self._filename = filename
-
     def get_nodes(self, criteria=lambda node: True):
         return [
-            GraphNode(self, node)
-            for node in self._graph
-            if criteria(GraphNode(self, node))
+            node
+            for node in self._graph.values()
+            if criteria(node)
         ]
 
     def has_node(self, id):
@@ -33,17 +30,18 @@ class GraphDatabase:
 
         if not self.has_node(id):
             logger.info("create node '%s'", id)
-            self._graph[id] = {"connections": {}, "meta": properties}
+            self._graph[id] = GraphNode(self, id)
+            self._graph[id]._properties = properties.copy()
         else:
-            self._graph[id]["meta"] = {**self._graph[id]["meta"], **properties}
+            self._graph[id]._properties = {**self._graph[id]._properties, **properties}
 
-        return GraphNode(self, id)
+        return self._graph[id]
 
     def get_node_count(self):
         return len(self._graph)
 
     def get_edge_count(self):
-        return sum([len(self._graph[node]) for node in self._graph])
+        return sum([len(self._graph[node]._edges) for node in self._graph])
 
     def load(self):
         with gzip.open(self._filename, "rb") as f:
@@ -51,4 +49,4 @@ class GraphDatabase:
 
     def save(self):
         with gzip.open(self._filename, "wb") as f:
-            pickle.dump(self._graph, f, protocol=pickle.DEFAULT_PROTOCOL)
+            pickle.dump(self._graph, f, protocol=4)
