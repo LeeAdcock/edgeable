@@ -8,8 +8,8 @@ logger = logging.getLogger("edgeable")
 
 class GraphNode:
     def __init__(self, db, id):
-        self.db = db
-        self.id = id
+        self._db = db
+        self._id = id
 
     def __eq__(self, other):
         if isinstance(other, GraphNode):
@@ -23,45 +23,46 @@ class GraphNode:
         return self.get_id()
 
     def get_id(self):
-        return self.id
+        return self._id
 
     def attach(self, destination, properties={}, directed=False):
-        if self.id not in self.db.graph:
+        if not self._db.has_node(self._id):
             raise RuntimeError("Node does not existing in graph")
-        if destination.get_id() == self.id:
+        if destination.get_id() == self._id:
             return False
-        is_connected = destination.get_id() in self.db.graph[self.id]["connections"]
+
+        is_connected = destination.get_id() in self._db._graph[self._id]["connections"]
         if not is_connected:
             logger.info(
-                "attach '%s' -> '%s' (%s)", self.id, destination.get_id(), properties
+                "attach '%s' -> '%s' (%s)", self._id, destination.get_id(), properties
             )
-            self.db.graph[self.id]["connections"][
+            self._db._graph[self._id]["connections"][
                 destination.get_id()
             ] = properties.copy()
             if not directed:
-                self.db.graph[destination.get_id()]["connections"][
-                    self.id
+                self._db._graph[destination.get_id()]["connections"][
+                    self._id
                 ] = properties.copy()
         else:
-            self.db.graph[self.id]["connections"][destination.get_id()] = {
-                **self.db.graph[self.id]["connections"][destination.get_id()],
+            self._db._graph[self._id]["connections"][destination.get_id()] = {
+                **self._db._graph[self._id]["connections"][destination.get_id()],
                 **properties,
             }
 
         return not is_connected
 
     def detach(self, destination=None, directed=False):
-        if self.id not in self.db.graph:
+        if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
         if destination:
             was_connected = (
-                destination.get_id() in self.db.graph[self.id]["connections"]
+                destination.get_id() in self._db._graph[self._id]["connections"]
             )
             if was_connected:
-                logger.info("detach '%s' from '%s'", self.id, destination.get_id())
-                del self.db.graph[self.id]["connections"][destination.get_id()]
+                logger.info("detach '%s' from '%s'", self._id, destination.get_id())
+                del self._db._graph[self._id]["connections"][destination.get_id()]
             if not directed:
-                del self.db.graph[destination.get_id()]["connections"][self.id]
+                del self._db._graph[destination.get_id()]["connections"][self._id]
             return was_connected
         else:
             was_connected = False
@@ -72,40 +73,40 @@ class GraphNode:
         return was_connected
 
     def delete(self):
-        if self.id not in self.db.graph:
+        if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
         self.detach()
-        del self.db.graph[self.id]
+        del self._db._graph[self._id]
 
     def set_property(self, key, value):
-        if self.id not in self.db.graph:
+        if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
-        self.db.graph[self.id]["meta"][key] = value
+        self._db._graph[self._id]["meta"][key] = value
 
     def get_property(self, key):
-        if self.id not in self.db.graph:
+        if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
         return (
-            self.db.graph[self.id]["meta"][key]
-            if key in self.db.graph[self.id]["meta"]
+            self._db._graph[self._id]["meta"][key]
+            if key in self._db._graph[self._id]["meta"]
             else None
         )
 
     def get_properties(self):
-        return self.db.graph[self.id]["meta"].copy() if self.id in self.db.graph else {}
+        return self._db._graph[self._id]["meta"].copy() if self._id in self._db._graph else {}
 
     # Returns a list of edges
     def get_edges(self, criteria=lambda edge: True):
-        if self.id not in self.db.graph:
+        if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
         return [
             edge
             for edge in [
                 GraphEdge(
-                    destination=GraphNode(self.db, id),
+                    destination=GraphNode(self._db, id),
                     source=self,
                 )
-                for id in self.db.graph[self.id]["connections"]
+                for id in self._db._graph[self._id]["connections"]
             ]
             if criteria(edge)
         ]
@@ -133,7 +134,7 @@ class GraphNode:
             route = self.find_route_to(end, skip)
             if route and len(skip) <= effort:
                 for step in route:
-                    if not step == self.id and not step == end.get_id():
+                    if not step == self._id and not step == end.get_id():
                         q.append(skip + [step])
                 routes.append(route)
 
@@ -144,7 +145,7 @@ class GraphNode:
     # Based on code by Eryk Kopczyński
     # https://www.python.org/doc/essays/graphs/
     def find_route_to(self, end, skip=[]):
-        dist = {self.id: [self]}
+        dist = {self._id: [self]}
         q = deque([self])
         while len(q):
             node = q.popleft()

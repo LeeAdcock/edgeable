@@ -61,7 +61,7 @@ class TestNode(unittest.TestCase):
 
         self.assertEqual(len(A.get_edges()), 2)
         self.assertEqual(
-            len(A.get_edges(lambda edge: edge.destination.get_id() == "B")), 1
+            len(A.get_edges(lambda edge: edge.get_destination().get_id() == "B")), 1
         )
 
     def test_attach_node_overwrite_properties(self):
