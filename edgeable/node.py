@@ -44,7 +44,7 @@ class GraphNode:
                 "attach '%s' -> '%s' (%s)", self._id, destination.get_id(), properties
             )
             edge = GraphEdge(
-                source=self, destination=destination, properties=properties
+                db=self._db, source=self, destination=destination, properties=properties
             )
             self._edges[destination.get_id()] = edge
             if not directed:

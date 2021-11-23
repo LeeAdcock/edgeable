@@ -1,29 +1,30 @@
 class GraphEdge:
-    def __init__(self, destination, source, properties):
-        self._destination = destination
-        self._source = source
+    def __init__(self, db, destination, source, properties):
+        self._db = db
+        self._destination_id = destination.get_id()
+        self._source_id = source.get_id()
 
         self._properties = properties.copy()
 
     def __eq__(self, other):
         if isinstance(other, GraphEdge):
             return (
-                self._source.get_id() == other.source.get_id()
-                and self._destination.get_id() == other.destination.get_id()
+                self._source_id == other.source.get_id()
+                and self._destination_id == other.destination.get_id()
             )
         return False
 
     def __str__(self):
-        return self._source.get_id() + "->" + self._destination.get_id()
+        return self._source_id + "->" + self._destination_id
 
     def __repr__(self):
-        return self._source.get_id() + "->" + self._destination.get_id()
+        return self._source_id + "->" + self._destination_id
 
     def get_destination(self):
-        return self._destination
+        return self._db._graph[self._destination_id]
 
     def get_source(self):
-        return self._source
+        return self._db._graph[self._source_id]
 
     def set_property(self, key, value, directed=False):
         if type(key) is not str:
@@ -31,9 +32,8 @@ class GraphEdge:
         self._properties[key] = value
 
         if not directed:
-            db = self._source._db
-            db._graph[self._destination.get_id()]._edges[
-                self._source.get_id()
+            self._db._graph[self._destination_id]._edges[
+                self._source_id
             ]._properties[key] = value
 
     def get_property(self, key):
@@ -45,4 +45,4 @@ class GraphEdge:
         return self._properties.copy()
 
     def delete(self, directed=False):
-        self._source.detach(self._destination, directed=directed)
+        self._db._graph[self._source_id].detach(self._db._graph[self._destination_id], directed=directed)
