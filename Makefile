@@ -7,7 +7,7 @@ deploy :
 	@ twine upload dist/*
 
 lint :
-	@ black **/*.py
+	@ black **/*.py 
 
 test :
-	@ python -m pytest  ./tests/test_*.py -s -v
+	@ python -m pytest ./tests/test_*.py -s -v
