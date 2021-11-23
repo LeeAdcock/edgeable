@@ -96,7 +96,6 @@ class GraphNode:
             raise RuntimeError("Key must be a string.")
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
-        print(self._properties)
         return self._properties[key] if key in self._properties else None
 
     def get_properties(self):
