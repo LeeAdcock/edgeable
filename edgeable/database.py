@@ -20,11 +20,7 @@ class GraphDatabase:
         if type(criteria) is not types.FunctionType:
             raise RuntimeError("Criteria must be a function.")
 
-        return [
-            node
-            for node in self._graph.values()
-            if criteria(node)
-        ]
+        return [node for node in self._graph.values() if criteria(node)]
 
     def has_node(self, id):
         return id in self._graph

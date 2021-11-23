@@ -68,3 +68,8 @@ The `GraphEdge` class representes the connections between `GraphNode` instances 
 - `set_property(key, value, directed=False)` - Set a property on the node with the provided key and value. If `directed` is `True` than the property is set only on the edge in this direction.
 - `get_property(key)` - Retrieve the node's property value for the provided key.
 - `get_properties()` - Retrieve a `dict` containing all properties set on the edge.
+
+## Resources
+
+Build process: https://app.travis-ci.com/github/LeeAdcock/edgeable
+PyPi: https://pypi.org/project/edgeable/

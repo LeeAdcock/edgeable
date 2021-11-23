@@ -170,4 +170,8 @@ class GraphNode:
         def flatten(route):
             return route if len(route) == 1 else flatten(route[0]) + [route[1]]
 
-        return flatten(dist.get(destination.get_id())) if dist.get(destination.get_id()) else None
+        return (
+            flatten(dist.get(destination.get_id()))
+            if dist.get(destination.get_id())
+            else None
+        )
