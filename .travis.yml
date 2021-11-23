@@ -4,7 +4,7 @@ python:
 install:
   - pip install -r requirements.txt
 script:
-  - make lint
+  - black **/*.py --check
   - make test
   - make build
 deploy:

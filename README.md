@@ -26,7 +26,6 @@ The `GraphDatabase` class represents the entire graph. Instances of `GraphDataba
 The `GraphDatabase(filename="graph.db")` constructor is used to create a graph database instance.  It optionally takes a filename to use when saving or loading the database to the file system.
 
 ##### Persistance
-- `set_filename(filename)` - As an alternative to setting in the constructor, the persistance file can be modified through this setter method.
 - `load()` - Load the database from the file system.
 - `save()` - Save the database to the file system.
 
