@@ -148,7 +148,7 @@ class GraphNode:
             node = q.popleft()
             for edge in node.get_edges():
                 destination_id = edge.get_destination().get_id()
-                if destination_id not in dist and not destination_id in skip:
+                if destination_id not in dist and end.get_id() not in dist and not destination_id in skip:
                     dist[destination_id] = [dist[node.get_id()], edge.get_destination()]
                     q.append(edge.get_destination())
 
