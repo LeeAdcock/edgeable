@@ -26,6 +26,8 @@ class GraphEdge:
         return self._source
 
     def set_property(self, key, value, directed=False):
+        if type(key) is not str:
+            raise RuntimeError("Key must be a string")
         self._properties[key] = value
 
         if not directed:
@@ -35,6 +37,8 @@ class GraphEdge:
             ]._properties[key] = value
 
     def get_property(self, key):
+        if type(key) is not str:
+            raise RuntimeError("Key must be a string")
         return self._properties[key] if key in self._properties else None
 
     def get_properties(self):

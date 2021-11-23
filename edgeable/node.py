@@ -1,6 +1,7 @@
 from edgeable import GraphEdge
 from collections import deque
 import logging
+import types
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("edgeable")
@@ -28,6 +29,10 @@ class GraphNode:
         return self._id
 
     def attach(self, destination, properties={}, directed=False):
+        if type(destination) is not GraphNode:
+            raise RuntimeError("Destination must be an instance of GraphNode.")
+        if type(properties) is not dict:
+            raise RuntimeError("Properties must be a dict.")
         if not self._db.has_node(self._id):
             raise RuntimeError("Node does not existing in graph")
         if destination.get_id() == self._id:
@@ -53,6 +58,8 @@ class GraphNode:
         return not is_connected
 
     def detach(self, destination=None, directed=False):
+        if destination is not None and type(destination) is not GraphNode:
+            raise RuntimeError("Destination must be an instance of GraphNode.")
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
         if destination:
@@ -78,11 +85,15 @@ class GraphNode:
         del self._db._graph[self._id]
 
     def set_property(self, key, value):
+        if type(key) is not str:
+            raise RuntimeError("Key must be a string.")
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
         self._properties[key] = value
 
     def get_property(self, key):
+        if type(key) is not str:
+            raise RuntimeError("Key must be a string.")
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
         print(self._properties)
@@ -93,12 +104,16 @@ class GraphNode:
 
     # Returns a list of edges
     def get_edges(self, criteria=lambda edge: True):
+        if type(criteria) is not types.FunctionType:
+            raise RuntimeError("Criteria must be a function.")
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
         return [edge for edge in self._edges.values() if criteria(edge)]
 
     # Returns an edge to the specified node
     def get_edge(self, destination):
+        if type(destination) is not GraphNode:
+            raise RuntimeError("Destination must be an instance of GraphNode.")
         edges = [
             edge
             for edge in self.get_edges()
@@ -112,15 +127,17 @@ class GraphNode:
     # Returns a collection of less-optimal routes. The number of
     # these returned depends on the effort to find them, provided
     # as a numeric parameter.
-    def find_routes_to(self, end, effort=5):
+    def find_routes_to(self, destination, effort=5):
+        if type(end) is not GraphNode:
+            raise RuntimeError("Destination must be an instance of GraphNode.")
         q = deque([[]])
         routes = []
         while len(q):
             skip = q.popleft()
-            route = self.find_route_to(end, skip)
+            route = self.find_route_to(destination, skip)
             if route and len(skip) <= effort:
                 for step in route:
-                    if not step == self._id and not step == end.get_id():
+                    if not step == self._id and not step == destination.get_id():
                         q.append(skip + [step])
                 routes.append(route)
 
@@ -130,19 +147,21 @@ class GraphNode:
 
     # Based on code by Eryk Kopczyński
     # https://www.python.org/doc/essays/graphs/
-    def find_route_to(self, end, skip=[]):
+    def find_route_to(self, destination, skip=[]):
+        if type(destination) is not GraphNode:
+            raise RuntimeError("Destination must be an instance of GraphNode.")
         dist = {self._id: [self]}
         q = deque([self])
         while len(q):
             node = q.popleft()
             for edge in node.get_edges():
-                destination = edge.get_destination()
+                next_node = edge.get_destination()
                 if (
-                    destination.get_id() not in dist
-                    and end.get_id() not in dist
-                    and not destination.get_id() in skip
+                    next_node.get_id() not in dist
+                    and destination.get_id() not in dist
+                    and not next_node.get_id() in skip
                 ):
-                    dist[destination.get_id()] = [
+                    dist[next_node.get_id()] = [
                         dist[node.get_id()],
                         edge.get_destination(),
                     ]
@@ -151,4 +170,4 @@ class GraphNode:
         def flatten(route):
             return route if len(route) == 1 else flatten(route[0]) + [route[1]]
 
-        return flatten(dist.get(end.get_id())) if dist.get(end.get_id()) else None
+        return flatten(dist.get(destination.get_id())) if dist.get(destination.get_id()) else None

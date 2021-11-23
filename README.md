@@ -12,8 +12,8 @@ The Edgeable database library can easily be installed with pip using `pip instal
 from edgeable import GraphDatabase
 
 db = new GraphDatabase()
-A = db.get_node('A', {'type': 'building'})
-B = db.get_node('B', {'type': 'classroom'})
+A = db.put_node('A', {'type': 'building'})
+B = db.put_node('B', {'type': 'classroom'})
 A.attach(B, {'relationship': 'contains'})
 ```
 

@@ -1,6 +1,7 @@
 import pickle
 import logging
 import gzip
+import types
 
 from edgeable import GraphNode
 
@@ -10,10 +11,15 @@ logger = logging.getLogger("edgeable")
 
 class GraphDatabase:
     def __init__(self, filename="graph.db"):
+        if type(filename) is not str:
+            raise RuntimeError("Filename must be a string.")
         self._graph = {}
         self._filename = filename
 
     def get_nodes(self, criteria=lambda node: True):
+        if type(criteria) is not types.FunctionType:
+            raise RuntimeError("Criteria must be a function.")
+
         return [
             node
             for node in self._graph.values()
@@ -24,9 +30,9 @@ class GraphDatabase:
         return id in self._graph
 
     # Retrieves or creates a node with the provide id
-    def get_node(self, id, properties={}):
-        if not isinstance(id, str):
-            raise "Node id must be a string."
+    def put_node(self, id, properties={}):
+        if type(id) is not str:
+            raise RuntimeError("Node id must be a string.")
 
         if not self.has_node(id):
             logger.info("create node '%s'", id)
