@@ -32,9 +32,9 @@ class GraphEdge:
         self._properties[key] = value
 
         if not directed:
-            self._db._graph[self._destination_id]._edges[
-                self._source_id
-            ]._properties[key] = value
+            self._db._graph[self._destination_id]._edges[self._source_id]._properties[
+                key
+            ] = value
 
     def get_property(self, key):
         if type(key) is not str:
@@ -45,4 +45,6 @@ class GraphEdge:
         return self._properties.copy()
 
     def delete(self, directed=False):
-        self._db._graph[self._source_id].detach(self._db._graph[self._destination_id], directed=directed)
+        self._db._graph[self._source_id].detach(
+            self._db._graph[self._destination_id], directed=directed
+        )
