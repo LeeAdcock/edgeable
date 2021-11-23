@@ -8,11 +8,11 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="edgeable",
-    version="0.0.3",
+    version="0.0.4",
     description="Easy to use, in memory, peristable graph database.",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/lee/edgeable",
+    url="https://github.com/leeadcock/edgeable",
     author="Lee Adcock",
     author_email="lee@katieandlee.com",
     license="MIT",
