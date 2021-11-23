@@ -128,7 +128,7 @@ class GraphNode:
     # these returned depends on the effort to find them, provided
     # as a numeric parameter.
     def find_routes_to(self, destination, effort=5):
-        if type(end) is not GraphNode:
+        if type(destination) is not GraphNode:
             raise RuntimeError("Destination must be an instance of GraphNode.")
         q = deque([[]])
         routes = []
