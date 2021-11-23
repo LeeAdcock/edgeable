@@ -34,7 +34,7 @@ The `GraphDatabase(filename="graph.db")` constructor is used to create a graph d
 - `get_node_count()` - Return the number of nodes in the database.
 - `get_edge_count()` - Return the number of edges in the database.
 - `has_node(id)` - Taking a node identifier, return an instance of type `GraphNode`.
-- `get_node(id, properties={})` - Retrieve the instance of `GraphNode` with the provided identifier. If one does not exist, the node is created. Regardless, the optionally provided properties are set on the node.
+- `put_node(id, properties={})` - Creates or retrieves the instance of `GraphNode` with the provided identifier. The optionally provided properties are set or updated on the node.
 - `get_nodes(criteria=lambda node: True)` - Retrieve a list of `GraphNode` instances from the database. If the optional criteria is not provided, all nodes are returned, otherwise the criteria function is used to return only matching nodes.
 
 ### Node Class

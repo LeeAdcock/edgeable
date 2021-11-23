@@ -8,7 +8,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="edgeable",
-    version="0.0.11",
+    version="0.0.12",
     description="Easy to use, in memory, peristable graph database.",
     long_description=README,
     long_description_content_type="text/markdown",
