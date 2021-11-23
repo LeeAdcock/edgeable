@@ -1,6 +1,6 @@
 # QuickGraph
 
-Edgeable was designed as an easy to use, in memory, peristable graph database. It is perfect for prototyping, exploring, and quick implementation in Python applications.
+*Edgeable was designed as an easy to use, in memory, peristable graph database. It is perfect for prototyping, exploring, and quick implementation in Python applications.* Nodes have one string identifier and an unlimited number of key:value properties. They are connected by directed or non-directed (default) edges. These edges can also have an unlimited number of key:value properties. Additional convenience capabilities, like route detection through the graph are built-in.
 
 ## Installation
 
