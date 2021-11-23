@@ -1,2 +1,3 @@
-
-from edgeable.graph import GraphDatabase, GraphEdge, GraphNode
+from edgeable.edge import GraphEdge
+from edgeable.node import GraphNode
+from edgeable.database import GraphDatabase

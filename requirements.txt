@@ -1,4 +1,1 @@
-dnspython>=2.0.0
-ipwhois>=1.2.0
-python-whois>=0.7.3
-tldextract
+pytest

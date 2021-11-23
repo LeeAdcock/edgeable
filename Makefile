@@ -5,3 +5,9 @@ build :
 
 deploy :
 	@ twine upload dist/*
+
+lint :
+	@ black **/*.py
+
+test :
+	@ python -m pytest  ./tests/test_*.py -s -v
