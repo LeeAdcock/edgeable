@@ -42,11 +42,11 @@ class ReadWriteLock:
 
 lock = ReadWriteLock()
 
-""" Acquire a modify lock. Blocks only if a thread has
-acquired the read lock. """
-
 
 def GraphModifyLock(func):
+    """Acquire a modify lock. Blocks only if a thread has
+    acquired the read lock."""
+
     def inner(*args, **kwargs):
         lock.acquire_modify()
         value = func(*args, **kwargs)
@@ -56,11 +56,10 @@ def GraphModifyLock(func):
     return inner
 
 
-""" Acquire a read lock. Blocks until there are no
-acquired read or modify locks. """
-
-
 def GraphReadLock(func):
+    """Acquire a read lock. Blocks until there are no
+    acquired read or modify locks."""
+
     def inner(*args, **kwargs):
         lock.acquire_read()
         value = func(*args, **kwargs)
