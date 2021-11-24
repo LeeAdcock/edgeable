@@ -1,5 +1,6 @@
 from edgeable import GraphModifyLock
 
+
 class GraphEdge:
     def __init__(self, db, destination, source, properties):
         self._db = db
