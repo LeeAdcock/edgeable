@@ -1,6 +1,6 @@
 # Edgeable
 
-*Edgeable was designed as an easy to use, in memory, peristable graph database. It is perfect for prototyping, exploring, and quick implementation in Python applications.* Nodes have one string identifier and an unlimited number of key:value properties. They are connected by directed or non-directed (default) edges. These edges can also have an unlimited number of key:value properties. Additional convenience capabilities, like route detection through the graph are built-in.
+*Edgeable was designed as an easy to use, in memory, peristable graph database. It is perfect for prototyping, exploring, and quick implementation in Python applications.* The graphs are made of Nodes with a string identifier and any  number of properties. Nodes are connected by directed or non-directed edges that can also have an unlimited number of properties. Additional convenience capabilities, like route detection through the graph, are built-in. Edgeable is thread safe for multi-threaded applications.
 
 ## Installation
 
