@@ -9,7 +9,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="edgeable",
-    version="0.1."+os.getenv('TRAVIS_BUILD_NUMBER'),
+    version="0.1.19",
     description="Easy to use, in memory, peristable graph database.",
     long_description=README,
     long_description_content_type="text/markdown",
