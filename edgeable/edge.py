@@ -1,3 +1,5 @@
+from edgeable import GraphModifyLock
+
 class GraphEdge:
     def __init__(self, db, destination, source, properties):
         self._db = db
@@ -26,6 +28,7 @@ class GraphEdge:
     def get_source(self):
         return self._db._graph[self._source_id]
 
+    @GraphModifyLock
     def set_property(self, key, value, directed=False):
         if type(key) is not str:
             raise RuntimeError("Key must be a string")
@@ -44,6 +47,7 @@ class GraphEdge:
     def get_properties(self):
         return self._properties.copy()
 
+    @GraphModifyLock
     def delete(self, directed=False):
         self._db._graph[self._source_id].detach(
             self._db._graph[self._destination_id], directed=directed

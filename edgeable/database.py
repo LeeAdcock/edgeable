@@ -3,7 +3,7 @@ import logging
 import gzip
 import types
 
-from edgeable import GraphNode
+from edgeable import GraphNode, GraphModifyLock, GraphReadLock
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("edgeable")
@@ -26,6 +26,7 @@ class GraphDatabase:
         return id in self._graph
 
     # Retrieves or creates a node with the provide id
+    @GraphModifyLock
     def put_node(self, id, properties={}):
         if type(id) is not str:
             raise RuntimeError("Node id must be a string.")
@@ -49,6 +50,7 @@ class GraphDatabase:
         with gzip.open(self._filename, "rb") as f:
             self._graph = pickle.load(f)
 
+    @GraphReadLock
     def save(self):
         with gzip.open(self._filename, "wb") as f:
             pickle.dump(self._graph, f, protocol=4)

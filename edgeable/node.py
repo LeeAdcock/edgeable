@@ -1,4 +1,4 @@
-from edgeable import GraphEdge
+from edgeable import GraphEdge, GraphModifyLock
 from collections import deque
 import logging
 import types
@@ -28,6 +28,7 @@ class GraphNode:
     def get_id(self):
         return self._id
 
+    @GraphModifyLock
     def attach(self, destination, properties={}, directed=False):
         if type(destination) is not GraphNode:
             raise RuntimeError("Destination must be an instance of GraphNode.")
@@ -57,6 +58,7 @@ class GraphNode:
 
         return not is_connected
 
+    @GraphModifyLock
     def detach(self, destination=None, directed=False):
         if destination is not None and type(destination) is not GraphNode:
             raise RuntimeError("Destination must be an instance of GraphNode.")
@@ -78,12 +80,14 @@ class GraphNode:
                 )
         return was_connected
 
+    @GraphModifyLock
     def delete(self):
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
         self.detach()
         del self._db._graph[self._id]
 
+    @GraphModifyLock
     def set_property(self, key, value):
         if type(key) is not str:
             raise RuntimeError("Key must be a string.")
