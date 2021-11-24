@@ -6,8 +6,8 @@ install:
 script:
   - black **/*.py --check
   - make test
+  - sed "s/TRAVIS_BUILD_NUMBER/$TRAVIS_BUILD_NUMBER/" setup.py -i
   - make build
-  - sed "s/TRAVIS_BUILD_NUMBER/$TRAVIS_BUILD_NUMBER/" setup.py > setup.py
 
 deploy:
   provider: pypi
