@@ -1,5 +1,6 @@
 import pathlib
 from setuptools import setup
+import os
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
@@ -8,7 +9,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="edgeable",
-    version="0.0.13",
+    version="0.1."+os.getenv('TRAVIS_BUILD_NUMBER'),
     description="Easy to use, in memory, peristable graph database.",
     long_description=README,
     long_description_content_type="text/markdown",
