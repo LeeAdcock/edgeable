@@ -47,10 +47,12 @@ class GraphDatabase:
         return sum([len(self._graph[node]._edges) for node in self._graph])
 
     def load(self):
+        logger.info("load from file '%s'", self._filename)
         with gzip.open(self._filename, "rb") as f:
             self._graph = pickle.load(f)
 
     @GraphReadLock
     def save(self):
+        logger.info("save to file '%s'", self._filename)
         with gzip.open(self._filename, "wb") as f:
             pickle.dump(self._graph, f, protocol=4)
