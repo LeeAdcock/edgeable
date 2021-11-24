@@ -7,6 +7,8 @@ script:
   - black **/*.py --check
   - make test
   - make build
+  - sed "s/TRAVIS_BUILD_NUMBER/$TRAVIS_BUILD_NUMBER/" setup.py > setup.py
+
 deploy:
   provider: pypi
   username: "__token__"
