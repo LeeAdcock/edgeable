@@ -9,6 +9,7 @@ script:
   - sed "s/TRAVIS_BUILD_NUMBER/$TRAVIS_BUILD_NUMBER/" setup.py -i
   - make build
 deploy:
+  skip_cleanup: true
   provider: pypi
   username: "__token__"
   password:
