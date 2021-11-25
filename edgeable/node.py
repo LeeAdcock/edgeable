@@ -95,6 +95,12 @@ class GraphNode:
             raise RuntimeError("Node does not existing in graph")
         self._properties[key] = value
 
+    @GraphModifyLock
+    def set_properties(self, properties):
+        if type(properties) is not dict:
+            raise RuntimeError("Key properties be a dict.")
+        self._properties = {**self._properties, **properties}
+
     def get_property(self, key):
         if type(key) is not str:
             raise RuntimeError("Key must be a string.")

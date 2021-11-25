@@ -53,6 +53,17 @@ class TestEdge(unittest.TestCase):
             {"my_key": "my_value"},
         )
 
+    def test_edge_set_properties_(self):
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+        A.attach(B)
+        edge = A.get_edges()[0]
+        edge.set_properties({"my_key": "my_value"})
+        self.assertEqual(
+            edge.get_properties(),
+            {"my_key": "my_value"},
+        )
+
     def test_edge_has_property(self):
         A = self.db.put_node("A")
         B = self.db.put_node("B")

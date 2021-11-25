@@ -40,6 +40,7 @@ The `GraphDatabase(filename="graph.db")` constructor is used to create a graph d
 
 ##### Properties
 - `set_property(key, value)` - Set a property on the node with the provided key and value.
+- `set_properties(properties)` - Provide a dict to set multiple properites on the database.
 - `get_property(key)` - Retrieve the node's property value for the provided key.
 - `get_properties()` - Retrieve a `dict` containing all properties set on the node.
 - `has_property(key)` - Returns a boolean indicating whether the property key is defined.
@@ -59,6 +60,7 @@ The `GraphNode` class represent nodes and associated properties within the graph
 
 ##### Properties
 - `set_property(key, value)` - Set a property on the node with the provided key and value.
+- `set_properties(properties)` - Provide a dict to set multiple properites on the node.
 - `get_property(key)` - Retrieve the node's property value for the provided key.
 - `get_properties()` - Retrieve a `dict` containing all properties set on the node.
 - `has_property(key)` - Returns a boolean indicating whether the property key is defined.
@@ -77,6 +79,7 @@ The `GraphEdge` class representes the connections between `GraphNode` instances 
 
 ##### Properties
 - `set_property(key, value, directed=False)` - Set a property on the node with the provided key and value. If `directed` is `True` than the property is set only on the edge in this direction.
+- `set_properties(properties, directed=False)` - Provide a dict to set multiple properites on the edge.
 - `get_property(key)` - Retrieve the node's property value for the provided key.
 - `get_properties()` - Retrieve a `dict` containing all properties set on the edge.
 - `has_property(key)` - Returns a boolean indicating whether the property key is defined.

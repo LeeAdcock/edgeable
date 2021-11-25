@@ -40,6 +40,18 @@ class GraphEdge:
                 key
             ] = value
 
+    @GraphModifyLock
+    def set_properties(self, properties, directed=False):
+        if type(properties) is not dict:
+            raise RuntimeError("Key properties be a dict.")
+        self._properties = {**self._properties, **properties}
+        if not directed:
+            destination = self._db._graph[self._destination_id]
+            destination._edges[self._source_id]._properties = {
+                **destination._edges[self._source_id]._properties,
+                **properties,
+            }
+
     def get_property(self, key):
         if type(key) is not str:
             raise RuntimeError("Key must be a string")

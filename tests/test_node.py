@@ -38,6 +38,13 @@ class TestNode(unittest.TestCase):
         self.assertEqual(A.has_property("my_key"), True)
         self.assertEqual(A.has_property("my_key_2"), False)
 
+    def test_node_set_properties_(self):
+        A = self.db.put_node("A")
+        A.set_properties({"my_key": "my_value"})
+
+        self.assertEqual(A.has_property("my_key"), True)
+        self.assertEqual(A.has_property("my_key_2"), False)
+
     def test_node_delete_property(self):
         A = self.db.put_node("A")
         A.set_property("my_key", "my_value")
