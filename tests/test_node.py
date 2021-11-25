@@ -38,7 +38,7 @@ class TestNode(unittest.TestCase):
         self.assertEqual(A.has_property("my_key"), True)
         self.assertEqual(A.has_property("my_key_2"), False)
 
-    def test_node_set_properties_(self):
+    def test_node_set_properties(self):
         A = self.db.put_node("A")
         A.set_properties({"my_key": "my_value"})
 

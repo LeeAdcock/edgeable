@@ -4,6 +4,7 @@ import gzip
 import types
 import os
 import tempfile
+import numbers
 
 from edgeable import GraphNode, GraphModifyLock, GraphReadLock
 
@@ -34,8 +35,8 @@ class GraphDatabase:
     # Retrieves or creates a node with the provide id
     @GraphModifyLock
     def put_node(self, id, properties={}):
-        if type(id) is not str:
-            raise RuntimeError("Node id must be a string.")
+        if type(id) is not str and not isinstance(id, numbers.Number):
+            raise RuntimeError("Node id must be a string or number.")
 
         if not self.has_node(id):
             logger.info("create node '%s'", id)
@@ -48,7 +49,7 @@ class GraphDatabase:
 
     @GraphModifyLock
     def set_property(self, key, value):
-        if type(key) is not str:
+        if type(key) is not str and not int:
             raise RuntimeError("Key must be a string.")
         self._properties[key] = value
 

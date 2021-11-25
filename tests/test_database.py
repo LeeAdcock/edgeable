@@ -19,11 +19,16 @@ class TestDatabase(unittest.TestCase):
             B.get_properties(), {"my_key": "my_value", "my_key_2": "my_value_2"}
         )
 
-    def test_has_node(self):
+    def test_has_node_string_id(self):
         self.db.put_node("A")
 
         self.assertEqual(self.db.has_node("A"), True)
         self.assertEqual(self.db.has_node("B"), False)
+
+    def test_has_node_number_id(self):
+        self.db.put_node(123)
+
+        self.assertEqual(self.db.has_node(123), True)
 
     def test_get_node_count(self):
         self.db.put_node("A")
