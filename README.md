@@ -88,4 +88,5 @@ The `GraphEdge` class representes the connections between `GraphNode` instances 
 ## Resources
 
 Build process: https://app.travis-ci.com/github/LeeAdcock/edgeable
+
 PyPi: https://pypi.org/project/edgeable/

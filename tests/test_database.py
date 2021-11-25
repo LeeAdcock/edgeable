@@ -77,7 +77,7 @@ class TestDatabase(unittest.TestCase):
     def test_persistance_custom_filename(self):
 
         A = self.db.put_node("A")
-        filename='custom.db'
+        filename = "custom.db"
 
         self.db.save(filename=filename)
         A.delete()
