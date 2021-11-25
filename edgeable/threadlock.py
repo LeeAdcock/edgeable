@@ -17,15 +17,23 @@ def GraphModifyLock(func):
             _modifiers += 1
         finally:
             _modify_ready.release()
-        value = func(*args, **kwargs)
-        _modify_ready.acquire()
+        value = None
+        exception = None
         try:
-            _modifiers -= 1
-            if not _modifiers:
-                _modify_ready.notifyAll()
+            value = func(*args, **kwargs)
+        except Exception as e:
+            exception = e
         finally:
-            _modify_ready.release()
-        return value
+            _modify_ready.acquire()
+            try:
+                _modifiers -= 1
+                if not _modifiers:
+                    _modify_ready.notifyAll()
+            finally:
+                _modify_ready.release()
+            if exception:
+                raise exception
+            return value
 
     return inner
 
@@ -40,8 +48,16 @@ def GraphReadLock(func):
         _modify_ready.acquire()
         while _modifiers > 0:
             _modify_ready.wait()
-        value = func(*args, **kwargs)
-        _modify_ready.release()
-        return value
+        value = None
+        exception = None
+        try:
+            value = func(*args, **kwargs)
+            _modify_ready.release()
+        except Exception as e:
+            exception = e
+        finally:
+            if exception:
+                raise exception
+            return value
 
     return inner

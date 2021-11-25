@@ -1,4 +1,5 @@
 import unittest
+import os
 from edgeable import GraphDatabase
 
 
@@ -68,6 +69,8 @@ class TestDatabase(unittest.TestCase):
 
         self.db.load()
         self.assertEqual(self.db.get_node_count(), 2)
+
+        os.remove("graph.db")
 
     def test_get_set_property(self):
         self.db.set_property("my_key", "my_value")
