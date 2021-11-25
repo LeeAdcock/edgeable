@@ -2,6 +2,8 @@ import pickle
 import logging
 import gzip
 import types
+import os
+import tempfile
 
 from edgeable import GraphNode, GraphModifyLock, GraphReadLock
 
@@ -54,5 +56,9 @@ class GraphDatabase:
     @GraphReadLock
     def save(self):
         logger.info("save to file '%s'", self._filename)
-        with gzip.open(self._filename, "wb") as f:
+        temp_file = tempfile.NamedTemporaryFile(
+            dir=os.path.dirname(self._filename), delete=False
+        )
+        with gzip.open(temp_file, "wb") as f:
             pickle.dump(self._graph, f, protocol=4)
+        os.replace(temp_file.name, self._filename)
