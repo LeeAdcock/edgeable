@@ -55,6 +55,7 @@ The `GraphNode` class represent nodes and associated properties within the graph
 - `detach(destination=None, directed=False)` - Detach the current node from the destination node, removing any connecting edge. If no destination is provided, all attached nodes are detached. If `directed` is set to `True`, then the edge is only removed in the current direction, any edge in the other directions is untouched. The method returns a boolean indicating if any edges were removed.
 - `get_edges(criteria=lambda edge: True)` - Retrieve a list of `GraphEdge` instances from the database. If the optional criteria is not provided, all edges for the node are returned, otherwise the criteria function is used to return only matching edges.
 - `get_edge(destination)` - Retrieve the edge that leads from the current node to the provided destination node.
+- `has_edge(destination)` - Returns a boolean indicating whether there is an edge from the current node to the destination node.
 
 ##### Properties
 - `set_property(key, value)` - Set a property on the node with the provided key and value.

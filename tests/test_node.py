@@ -78,6 +78,17 @@ class TestNode(unittest.TestCase):
             len(A.get_edges(lambda edge: edge.get_destination().get_id() == "B")), 1
         )
 
+    def test_node_has_edge(self):
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+        C = self.db.put_node("C")
+        B.attach(A)
+
+        self.assertEqual(A.has_edge(B), True)
+        self.assertEqual(B.has_edge(A), True)
+        self.assertEqual(A.has_edge(C), False)
+        self.assertEqual(B.has_edge(C), False)
+
     def test_attach_node_overwrite_properties(self):
         A = self.db.put_node("A")
         B = self.db.put_node("B")

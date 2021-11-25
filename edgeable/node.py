@@ -139,6 +139,15 @@ class GraphNode:
 
         return None
 
+    # Returns an edge to the specified node
+    def has_edge(self, destination):
+        if type(destination) is not GraphNode:
+            raise RuntimeError("Destination must be an instance of GraphNode.")
+        return any(
+            edge.get_destination().get_id() == destination.get_id()
+            for edge in self.get_edges()
+        )
+
     # Returns a collection of less-optimal routes. The number of
     # these returned depends on the effort to find them, provided
     # as a numeric parameter.
