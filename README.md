@@ -23,11 +23,11 @@ A.attach(B, {'relationship': 'contains'})
 The `GraphDatabase` class represents the entire graph. Instances of `GraphDatabase` provide the ability to retrieve and creates nodes, as well as save or load from the file system.
 
 ##### Database Constructor
-The `GraphDatabase(filename="graph.db")` constructor is used to create a graph database instance.  It optionally takes a filename to use when saving or loading the database to the file system.
+The `GraphDatabase()` constructor is used to create a new graph database instance.  
 
 ##### Database Persistance
-- `load()` - Load the database from the file system.
-- `save()` - Save the database to the file system.
+- `load(filename)` - Load the database from the file system. Optionally takes a custom filename.
+- `save(filename)` - Save the database to the file system. Optionally takes a custom filename.
 
 ##### Database Nodes and Edges
 

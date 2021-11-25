@@ -15,11 +15,8 @@ logger = logging.getLogger("edgeable")
 class GraphDatabase:
     """Class representing the graph database."""
 
-    def __init__(self, filename="graph.db", properties={}):
-        if type(filename) is not str:
-            raise RuntimeError("Filename must be a string.")
+    def __init__(self, properties={}):
         self._graph = {}
-        self._filename = filename
         self._properties = properties
 
     def get_nodes(self, criteria=lambda node: True):
@@ -101,17 +98,21 @@ class GraphDatabase:
         """Return the number of edges."""
         return sum([len(self._graph[node]._edges) for node in self._graph])
 
-    def load(self):
-        logger.info("load from file '%s'", self._filename)
-        with gzip.open(self._filename, "rb") as f:
+    def load(self, filename="graph.db"):
+        if type(filename) is not str:
+            raise RuntimeError("Filename must be a string.")
+        logger.info("load from file '%s'", filename)
+        with gzip.open(filename, "rb") as f:
             self._graph = pickle.load(f)
 
     @GraphReadLock
-    def save(self):
-        logger.info("save to file '%s'", self._filename)
+    def save(self, filename="graph.db"):
+        if type(filename) is not str:
+            raise RuntimeError("Filename must be a string.")
+        logger.info("save to file '%s'", filename)
         temp_file = tempfile.NamedTemporaryFile(
-            dir=os.path.dirname(self._filename), delete=False
+            dir=os.path.dirname(filename), delete=False
         )
         with gzip.open(temp_file, "wb") as f:
             pickle.dump(self._graph, f, protocol=4)
-        os.replace(temp_file.name, self._filename)
+        os.replace(temp_file.name, filename)

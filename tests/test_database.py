@@ -63,19 +63,32 @@ class TestDatabase(unittest.TestCase):
         )
 
     def test_persistance(self):
-        A = self.db.put_node("A", {"my_key": "my_value"})
-        B = self.db.put_node("B", {"my_key_2": "my_value_2"})
-        A.attach(B)
+        A = self.db.put_node("A")
 
         self.db.save()
         A.delete()
-        B.delete()
         self.assertEqual(self.db.get_node_count(), 0)
 
         self.db.load()
-        self.assertEqual(self.db.get_node_count(), 2)
+        self.assertEqual(self.db.get_node_count(), 1)
 
         os.remove("graph.db")
+
+    def test_persistance_custom_filename(self):
+
+        A = self.db.put_node("A")
+        filename='custom.db'
+
+        self.db.save(filename=filename)
+        A.delete()
+
+        self.assertEqual(self.db.get_node_count(), 0)
+        self.assertEqual(os.path.exists(filename), True)
+
+        self.db.load(filename)
+        self.assertEqual(self.db.get_node_count(), 1)
+
+        os.remove(filename)
 
     def test_get_set_property(self):
         self.db.set_property("my_key", "my_value")
