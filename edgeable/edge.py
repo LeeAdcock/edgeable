@@ -43,10 +43,22 @@ class GraphEdge:
     def get_property(self, key):
         if type(key) is not str:
             raise RuntimeError("Key must be a string")
-        return self._properties[key] if key in self._properties else None
+        return self._properties[key] if self.has_property(key) else None
 
     def get_properties(self):
         return self._properties.copy()
+
+    def has_property(self, key):
+        return key in self._properties
+
+    @GraphModifyLock
+    def delete_property(self, key):
+        if type(key) is not str:
+            raise RuntimeError("Key must be a string.")
+        value = self.get_property(key)
+        if self.has_property(key):
+            del self._properties[key]
+        return value
 
     @GraphModifyLock
     def delete(self, directed=False):

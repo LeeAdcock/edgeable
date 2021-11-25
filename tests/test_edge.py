@@ -53,6 +53,24 @@ class TestEdge(unittest.TestCase):
             {"my_key": "my_value"},
         )
 
+    def test_edge_has_property(self):
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+        A.attach(B, {"my_key": "my_value"})
+        edge = A.get_edges()[0]
+
+        self.assertEqual(edge.has_property("my_key"), True)
+        self.assertEqual(edge.has_property("my_key_2"), False)
+
+    def test_edge_delete_property(self):
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+        A.attach(B, {"my_key": "my_value"})
+        edge = A.get_edges()[0]
+
+        edge.delete_property("my_key")
+        self.assertEqual(edge.has_property("my_key"), False)
+
     def test_edge_delete(self):
         A = self.db.put_node("A")
         B = self.db.put_node("B")

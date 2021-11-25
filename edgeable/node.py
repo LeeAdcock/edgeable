@@ -100,10 +100,22 @@ class GraphNode:
             raise RuntimeError("Key must be a string.")
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
-        return self._properties[key] if key in self._properties else None
+        return self._properties[key] if self.has_property(key) else None
 
     def get_properties(self):
-        return self._properties.copy() if self._id in self._db._graph else {}
+        return self._properties.copy()
+
+    def has_property(self, key):
+        return key in self._properties
+
+    @GraphModifyLock
+    def delete_property(self, key):
+        if type(key) is not str:
+            raise RuntimeError("Key must be a string.")
+        value = self.get_property(key)
+        if self.has_property(key):
+            del self._properties[key]
+        return value
 
     # Returns a list of edges
     def get_edges(self, criteria=lambda edge: True):

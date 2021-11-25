@@ -68,3 +68,30 @@ class TestDatabase(unittest.TestCase):
 
         self.db.load()
         self.assertEqual(self.db.get_node_count(), 2)
+
+    def test_get_set_property(self):
+        self.db.set_property("my_key", "my_value")
+        self.assertEqual(self.db.get_property("my_key"), "my_value")
+
+    def test_get_properties(self):
+        self.db.set_property("my_key", "my_value")
+
+        properties = self.db.get_properties()
+        self.assertEqual(properties, {"my_key": "my_value"})
+
+    def test_properties_returns_copy(self):
+        self.db.set_property("my_key", "my_value")
+
+        properties = self.db.get_properties()
+        properties["my_key_2"] = "my_value_2"
+        self.assertEqual(self.db.get_properties(), {"my_key": "my_value"})
+
+    def test_has_property(self):
+        self.db.set_property("my_key", "my_value")
+        self.assertEqual(self.db.has_property("my_key"), True)
+        self.assertEqual(self.db.has_property("my_key_2"), False)
+
+    def test_delete_property(self):
+        self.db.set_property("my_key", "my_value")
+        self.db.delete_property("my_key")
+        self.assertEqual(self.db.has_property("my_key"), False)

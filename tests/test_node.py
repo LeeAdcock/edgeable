@@ -31,6 +31,20 @@ class TestNode(unittest.TestCase):
         properties["my_key_2"] = "my_value_2"
         self.assertEqual(A.get_properties(), {"my_key": "my_value"})
 
+    def test_node_has_property(self):
+        A = self.db.put_node("A")
+        A.set_property("my_key", "my_value")
+
+        self.assertEqual(A.has_property("my_key"), True)
+        self.assertEqual(A.has_property("my_key_2"), False)
+
+    def test_node_delete_property(self):
+        A = self.db.put_node("A")
+        A.set_property("my_key", "my_value")
+
+        A.delete_property("my_key")
+        self.assertEqual(A.has_property("my_key"), False)
+
     def test_attach_node(self):
         A = self.db.put_node("A")
         B = self.db.put_node("B")

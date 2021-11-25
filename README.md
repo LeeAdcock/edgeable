@@ -31,11 +31,19 @@ The `GraphDatabase(filename="graph.db")` constructor is used to create a graph d
 
 ##### Nodes and Edges
 
+- `put_node(id, properties={})` - Creates or retrieves the instance of `GraphNode` with the provided identifier. The optionally provided properties are set or updated on the node.
+- `has_node(id)` - Taking a node identifier, return an instance of type `GraphNode`.
+- `get_node(id)` - Taking a node identifier, return an instance of type `GraphNode` if it exists in the database. Returns `None` otherwise.
+- `get_nodes(criteria=lambda node: True)` - Retrieve a list of `GraphNode` instances from the database. If the optional criteria is not provided, all nodes are returned, otherwise the criteria function is used to return only matching nodes.
 - `get_node_count()` - Return the number of nodes in the database.
 - `get_edge_count()` - Return the number of edges in the database.
-- `has_node(id)` - Taking a node identifier, return an instance of type `GraphNode`.
-- `put_node(id, properties={})` - Creates or retrieves the instance of `GraphNode` with the provided identifier. The optionally provided properties are set or updated on the node.
-- `get_nodes(criteria=lambda node: True)` - Retrieve a list of `GraphNode` instances from the database. If the optional criteria is not provided, all nodes are returned, otherwise the criteria function is used to return only matching nodes.
+
+##### Properties
+- `set_property(key, value)` - Set a property on the node with the provided key and value.
+- `get_property(key)` - Retrieve the node's property value for the provided key.
+- `get_properties()` - Retrieve a `dict` containing all properties set on the node.
+- `has_property(key)` - Returns a boolean indicating whether the property key is defined.
+- `delete_property(key)` - Removes a property.
 
 ### Node Class
 The `GraphNode` class represent nodes and associated properties within the graph. Nodes can be connected through directed or non-directed edges.
@@ -52,6 +60,8 @@ The `GraphNode` class represent nodes and associated properties within the graph
 - `set_property(key, value)` - Set a property on the node with the provided key and value.
 - `get_property(key)` - Retrieve the node's property value for the provided key.
 - `get_properties()` - Retrieve a `dict` containing all properties set on the node.
+- `has_property(key)` - Returns a boolean indicating whether the property key is defined.
+- `delete_property(key)` - Removes a property.
 
 ##### Routes
 - `find_routes_to(end, effort=5)`
@@ -68,6 +78,8 @@ The `GraphEdge` class representes the connections between `GraphNode` instances 
 - `set_property(key, value, directed=False)` - Set a property on the node with the provided key and value. If `directed` is `True` than the property is set only on the edge in this direction.
 - `get_property(key)` - Retrieve the node's property value for the provided key.
 - `get_properties()` - Retrieve a `dict` containing all properties set on the edge.
+- `has_property(key)` - Returns a boolean indicating whether the property key is defined.
+- `delete_property(key)` - Removes a property.
 
 ## Resources
 
