@@ -22,14 +22,14 @@ A.attach(B, {'relationship': 'contains'})
 ### Database Class
 The `GraphDatabase` class represents the entire graph. Instances of `GraphDatabase` provide the ability to retrieve and creates nodes, as well as save or load from the file system.
 
-##### Constructor
+##### Database Constructor
 The `GraphDatabase(filename="graph.db")` constructor is used to create a graph database instance.  It optionally takes a filename to use when saving or loading the database to the file system.
 
-##### Persistance
+##### Database Persistance
 - `load()` - Load the database from the file system.
 - `save()` - Save the database to the file system.
 
-##### Nodes and Edges
+##### Database Nodes and Edges
 
 - `put_node(id, properties={})` - Creates or retrieves the instance of `GraphNode` with the provided identifier. The optionally provided properties are set or updated on the node.
 - `has_node(id)` - Taking a node identifier, return an instance of type `GraphNode`.
@@ -38,7 +38,7 @@ The `GraphDatabase(filename="graph.db")` constructor is used to create a graph d
 - `get_node_count()` - Return the number of nodes in the database.
 - `get_edge_count()` - Return the number of edges in the database.
 
-##### Properties
+##### Database Properties
 - `set_property(key, value)` - Set a property on the node with the provided key and value.
 - `set_properties(properties)` - Provide a dict to set multiple properites on the database.
 - `get_property(key)` - Retrieve the node's property value for the provided key.
@@ -51,14 +51,14 @@ The `GraphNode` class represent nodes and associated properties within the graph
 
 - `delete()` - Delete the node from the database, removing any associated edges.
 
-##### Edges
+##### Node Edges
 - `attach(destination, properties={}, directed=False)` - Attach the current node to the destination node with a new edge. The optionally provided properties will be set on the edge, whether it exists or is created new. The releationship will be nondirectional unless `directed` is set to `True`. The method returns a boolean indicating if a new edge was created between the nodes.
 - `detach(destination=None, directed=False)` - Detach the current node from the destination node, removing any connecting edge. If no destination is provided, all attached nodes are detached. If `directed` is set to `True`, then the edge is only removed in the current direction, any edge in the other directions is untouched. The method returns a boolean indicating if any edges were removed.
 - `get_edges(criteria=lambda edge: True)` - Retrieve a list of `GraphEdge` instances from the database. If the optional criteria is not provided, all edges for the node are returned, otherwise the criteria function is used to return only matching edges.
 - `get_edge(destination)` - Retrieve the edge that leads from the current node to the provided destination node.
 - `has_edge(destination)` - Returns a boolean indicating whether there is an edge from the current node to the destination node.
 
-##### Properties
+##### Node Properties
 - `set_property(key, value)` - Set a property on the node with the provided key and value.
 - `set_properties(properties)` - Provide a dict to set multiple properites on the node.
 - `get_property(key)` - Retrieve the node's property value for the provided key.
@@ -66,7 +66,7 @@ The `GraphNode` class represent nodes and associated properties within the graph
 - `has_property(key)` - Returns a boolean indicating whether the property key is defined.
 - `delete_property(key)` - Removes a property.
 
-##### Routes
+##### Node Routes
 - `find_routes_to(end, effort=5)`
 - `find_route_to(end, skip=[])`
 
@@ -77,7 +77,7 @@ The `GraphEdge` class representes the connections between `GraphNode` instances 
 - `get_source()` - Retrieve the `GraphNode` instance that is the source of this edge.
 - `delete(directed=False)` - Delete the edge from the database. If `directed` is `True` than only the edge in this direction is deleted.
 
-##### Properties
+##### Edge Properties
 - `set_property(key, value, directed=False)` - Set a property on the node with the provided key and value. If `directed` is `True` than the property is set only on the edge in this direction.
 - `set_properties(properties, directed=False)` - Provide a dict to set multiple properites on the edge.
 - `get_property(key)` - Retrieve the node's property value for the provided key.
