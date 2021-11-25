@@ -30,6 +30,11 @@ class GraphNode:
 
     @GraphModifyLock
     def attach(self, destination, properties={}, directed=False):
+        """Attach this node to another node with an edge. Returns a boolean
+        indicating if a new edge was created. Optionally provided properties
+        will be set on the edge. Unless directed=True then this is
+        mirrored onto an edge in the reverse direction."""
+
         if type(destination) is not GraphNode:
             raise RuntimeError("Destination must be an instance of GraphNode.")
         if type(properties) is not dict:
@@ -60,6 +65,11 @@ class GraphNode:
 
     @GraphModifyLock
     def detach(self, destination=None, directed=False):
+        """Detach this node from another node. Returns a boolean
+        indicating if an edge was removed. If no destination is provided
+        then the node is detached fom all other nodes. Unless directed=True
+        then this is mirrored onto an edge in the reverse direction."""
+
         if destination is not None and type(destination) is not GraphNode:
             raise RuntimeError("Destination must be an instance of GraphNode.")
         if self._id not in self._db._graph:
@@ -82,6 +92,7 @@ class GraphNode:
 
     @GraphModifyLock
     def delete(self):
+        """Delete this node and all associated edges."""
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
         self.detach()
@@ -89,6 +100,7 @@ class GraphNode:
 
     @GraphModifyLock
     def set_property(self, key, value):
+        """Set a node property."""
         if type(key) is not str:
             raise RuntimeError("Key must be a string.")
         if self._id not in self._db._graph:
@@ -97,11 +109,13 @@ class GraphNode:
 
     @GraphModifyLock
     def set_properties(self, properties):
+        """Set multiple properties from the provided dict. Properties not in the dict are not removed."""
         if type(properties) is not dict:
             raise RuntimeError("Key properties be a dict.")
         self._properties = {**self._properties, **properties}
 
     def get_property(self, key):
+        """Get the property value."""
         if type(key) is not str:
             raise RuntimeError("Key must be a string.")
         if self._id not in self._db._graph:
@@ -109,13 +123,16 @@ class GraphNode:
         return self._properties[key] if self.has_property(key) else None
 
     def get_properties(self):
+        """Get a dict containing all properties and values."""
         return self._properties.copy()
 
     def has_property(self, key):
+        """Boolean value indicating if the property is defined."""
         return key in self._properties
 
     @GraphModifyLock
     def delete_property(self, key):
+        """Delete a property if it is defined. Returns the previous value, or None."""
         if type(key) is not str:
             raise RuntimeError("Key must be a string.")
         value = self.get_property(key)
@@ -125,6 +142,7 @@ class GraphNode:
 
     # Returns a list of edges
     def get_edges(self, criteria=lambda edge: True):
+        """Return all edges, or edges which match the optional filter function."""
         if type(criteria) is not types.FunctionType:
             raise RuntimeError("Criteria must be a function.")
         if self._id not in self._db._graph:
@@ -133,6 +151,7 @@ class GraphNode:
 
     # Returns an edge to the specified node
     def get_edge(self, destination):
+        """Return the edge to the specified destination node, or None if one does not exist."""
         if type(destination) is not GraphNode:
             raise RuntimeError("Destination must be an instance of GraphNode.")
         edges = [
@@ -147,6 +166,7 @@ class GraphNode:
 
     # Returns an edge to the specified node
     def has_edge(self, destination):
+        """Boolean whether an edge exists to the specified destination node."""
         if type(destination) is not GraphNode:
             raise RuntimeError("Destination must be an instance of GraphNode.")
         return any(
@@ -178,6 +198,8 @@ class GraphNode:
     # Based on code by Eryk Kopczyński
     # https://www.python.org/doc/essays/graphs/
     def find_route_to(self, destination, skip=[]):
+        """Find a route across the graph from the current node to the destination node, returned as an array of nodes. If no route exists, returns None."""
+
         if type(destination) is not GraphNode:
             raise RuntimeError("Destination must be an instance of GraphNode.")
         dist = {self._id: [self]}

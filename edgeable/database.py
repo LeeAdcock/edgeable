@@ -13,6 +13,8 @@ logger = logging.getLogger("edgeable")
 
 
 class GraphDatabase:
+    """Class representing the graph database."""
+
     def __init__(self, filename="graph.db", properties={}):
         if type(filename) is not str:
             raise RuntimeError("Filename must be a string.")
@@ -21,20 +23,24 @@ class GraphDatabase:
         self._properties = properties
 
     def get_nodes(self, criteria=lambda node: True):
+        """Return all nodes, or nodes which match the optional filter function."""
         if type(criteria) is not types.FunctionType:
             raise RuntimeError("Criteria must be a function.")
 
         return [node for node in self._graph.values() if criteria(node)]
 
     def get_node(self, id):
+        """Get the node with the provided id, or None if it does not exist."""
         return self._graph[id] if self.has_node(id) else None
 
     def has_node(self, id):
+        """Boolean indicating if the node is defined."""
         return id in self._graph
 
     # Retrieves or creates a node with the provide id
     @GraphModifyLock
     def put_node(self, id, properties={}):
+        """Create a node, or update it if it already exists. Returns the node."""
         if type(id) is not str and not isinstance(id, numbers.Number):
             raise RuntimeError("Node id must be a string or number.")
 
@@ -49,31 +55,37 @@ class GraphDatabase:
 
     @GraphModifyLock
     def set_property(self, key, value):
+        """Set a database property."""
         if type(key) is not str and not int:
             raise RuntimeError("Key must be a string.")
         self._properties[key] = value
 
     @GraphModifyLock
     def set_properties(self, properties):
+        """Set multiple properties from the provided dict. Properties not in the dict are not removed."""
         if type(properties) is not dict:
             raise RuntimeError("Properties be a dict. {}".format(type(properties)))
         self._properties = {**self._properties, **properties}
 
     def get_property(self, key):
+        """Get the property value."""
         if type(key) is not str:
             raise RuntimeError("Key must be a string.")
         return self._properties[key] if self.has_property(key) else None
 
     def get_properties(self):
+        """Get a dict containing all properties and values."""
         return self._properties.copy()
 
     def has_property(self, key):
+        """Boolean value indicating if the property is defined."""
         if type(key) is not str:
             raise RuntimeError("Key must be a string.")
         return key in self._properties
 
     @GraphModifyLock
     def delete_property(self, key):
+        """Delete a property if it is defined. Returns the previous value, or None."""
         if type(key) is not str:
             raise RuntimeError("Key must be a string.")
         value = self.get_property(key)
@@ -82,9 +94,11 @@ class GraphDatabase:
         return value
 
     def get_node_count(self):
+        """Return the number of nodes."""
         return len(self._graph)
 
     def get_edge_count(self):
+        """Return the number of edges."""
         return sum([len(self._graph[node]._edges) for node in self._graph])
 
     def load(self):
