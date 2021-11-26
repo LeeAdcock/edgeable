@@ -25,6 +25,9 @@ class GraphNode:
     def __repr__(self):
         return self.get_id()
 
+    def __hash__(self):
+        return hash(self.get_id())
+
     def get_id(self):
         return self._id
 
@@ -209,19 +212,19 @@ class GraphNode:
 
         if type(destination) is not GraphNode:
             raise RuntimeError("Destination must be an instance of GraphNode.")
-        dist = {self._id: [self]}
+        dist = {self: [self]}
         q = deque([self])
         while len(q):
             node = q.popleft()
             for edge in node.get_edges():
                 next_node = edge.get_destination()
                 if (
-                    next_node.get_id() not in dist
-                    and destination.get_id() not in dist
+                    next_node not in dist
+                    and destination not in dist
                     and next_node not in skip
                 ):
-                    dist[next_node.get_id()] = [
-                        dist[node.get_id()],
+                    dist[next_node] = [
+                        dist[node],
                         next_node,
                     ]
                     q.append(next_node)
@@ -229,8 +232,20 @@ class GraphNode:
         def flatten(route):
             return route if len(route) == 1 else flatten(route[0]) + [route[1]]
 
-        return (
-            flatten(dist.get(destination.get_id()))
-            if dist.get(destination.get_id())
-            else None
-        )
+        return flatten(dist[destination]) if destination in dist else None
+
+    def find_neighbors(self, distance=1):
+        """Find all neighbors the specified distance away."""
+
+        dist = {self: 0}
+        q = deque([self])
+        while len(q):
+            node = q.popleft()
+            for edge in node.get_edges():
+                next_node = edge.get_destination()
+                if next_node not in dist:
+                    dist[next_node] = dist[node] + 1
+                    if dist[next_node] < distance:
+                        q.append(next_node)
+
+        return [node for node in dist.keys() if node != self]

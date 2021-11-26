@@ -249,3 +249,24 @@ class TestNode(unittest.TestCase):
         D.attach(B)
 
         self.assertEqual(A.find_routes_to(D), [[A, B, D], [A, C, D]])
+
+    def test_node_neighbors(self):
+        A = self.db.put_node("A")
+
+        B = self.db.put_node("B")
+        B.attach(A)
+
+        C = self.db.put_node("C")
+        C.attach(B)
+
+        D = self.db.put_node("D")
+        D.attach(C)
+
+        self.assertEqual(A.find_neighbors(distance=1), [B])
+        self.assertEqual(A.find_neighbors(distance=2), [B, C])
+        self.assertEqual(A.find_neighbors(distance=3), [B, C, D])
+
+    def test_node_no_neighbors(self):
+        A = self.db.put_node("A")
+
+        self.assertEqual(A.find_neighbors(distance=3), [])
