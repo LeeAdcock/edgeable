@@ -19,17 +19,17 @@ A.attach(B, {'relationship': 'contains'})
 
 ## Classes
 
-### Database Class
+### Graph Class
 The `GraphDatabase` class represents the entire graph. Instances of `GraphDatabase` provide the ability to retrieve and creates nodes, as well as save or load from the file system.
 
-##### Database Constructor
+##### Graph Constructor
 The `GraphDatabase()` constructor is used to create a new graph database instance.  
 
-##### Database Persistance
+##### Graph Persistance
 - `load(filename="graph.db")` - Load the database from the file system. Optionally takes a custom filename.
 - `save(filename="graph.db")` - Save the database to the file system. Optionally takes a custom filename.
 
-##### Database Nodes and Edges
+##### Graph Nodes and Edges
 
 - `put_node(id, properties={})` - Creates or retrieves the instance of `GraphNode` with the provided identifier. The optionally provided properties are set or updated on the node.
 - `has_node(id)` - Taking a node identifier, return an instance of type `GraphNode`.
@@ -38,7 +38,7 @@ The `GraphDatabase()` constructor is used to create a new graph database instanc
 - `get_node_count()` - Return the number of nodes in the database.
 - `get_edge_count()` - Return the number of edges in the database.
 
-##### Database Properties
+##### Graph Properties
 - `set_property(key, value)` - Set a property on the node with the provided key and value.
 - `set_properties(properties)` - Provide a dict to set multiple properites on the database.
 - `get_property(key)` - Retrieve the node's property value for the provided key.
