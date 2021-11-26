@@ -25,21 +25,16 @@ class GraphDatabase:
         self._properties = properties
         self._filename = filename
 
-        self._dynamic_edge_generators = []
-
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.save()
 
-    def add_dynamic_edge_generators(self, obj):
-        self._dynamic_edge_generators.append(obj)
-
-    def get_nodes(self, criteria=lambda node: True):
+    def get_nodes(self, filter_fn=lambda node: True):
         """Return all nodes, or nodes which match the optional filter function."""
-        if type(criteria) is not types.FunctionType:
-            raise RuntimeError("Criteria must be a function.")
+        if type(filter_fn) is not types.FunctionType:
+            raise RuntimeError("Filter must be a function.")
 
         return [node for node in self._graph.values() if criteria(node)]
 
