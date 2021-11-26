@@ -25,11 +25,16 @@ class GraphDatabase:
         self._properties = properties
         self._filename = filename
 
+        self._dynamic_edge_generators = []
+
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.save()
+
+    def add_dynamic_edge_generators(self, obj):
+        self._dynamic_edge_generators.append(obj)
 
     def get_nodes(self, criteria=lambda node: True):
         """Return all nodes, or nodes which match the optional filter function."""
@@ -46,7 +51,6 @@ class GraphDatabase:
         """Boolean indicating if the node is defined."""
         return id in self._graph
 
-    # Retrieves or creates a node with the provide id
     @GraphModifyLock
     def put_node(self, id, properties={}):
         """Create a node, or update it if it already exists. Returns the node."""

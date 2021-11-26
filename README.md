@@ -114,7 +114,7 @@ The `GraphNode` class represent nodes and associated properties within the graph
 - `find_route_to(end, skip=[])`
 
 ##### Node Neighbors
-- `find_neighbors(distance=1)` - Find all nodes within a specified distance.
+- `find_neighbors(distance=1, distance_fn=lambda edge: 1)` - Find all nodes within a specified distance. By default, each edge is considered a distance of one. A custom function can be provided to provide a custom distance calculation.
 
 ### Edge Class
 The `GraphEdge` class representes the connections between `GraphNode` instances in the database. All methods assume edges are nondirected, so interactions with edges equally manipulates an edge in each direction between nodes.  This behavior can be overridden for specific calls, resulting in the creation, modification, or deletion of directional edges.

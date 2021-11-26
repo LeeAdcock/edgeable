@@ -145,13 +145,13 @@ class GraphNode:
         return value
 
     # Returns a list of edges
-    def get_edges(self, criteria=lambda edge: True):
+    def get_edges(self, filter_fn=lambda edge: True):
         """Return all edges, or edges which match the optional filter function."""
-        if type(criteria) is not types.FunctionType:
-            raise RuntimeError("Criteria must be a function.")
+        if type(filter_fn) is not types.FunctionType:
+            raise RuntimeError("Filter must be a function.")
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
-        return [edge for edge in self._edges.values() if criteria(edge)]
+        return [edge for edge in self._edges.values() if filter_fn(edge)]
 
     # Returns an edge to the specified node
     def get_edge(self, destination):
@@ -234,7 +234,7 @@ class GraphNode:
 
         return flatten(dist[destination]) if destination in dist else None
 
-    def find_neighbors(self, distance=1):
+    def find_neighbors(self, distance=1, distance_fn=lambda edge: 1):
         """Find all neighbors the specified distance away."""
 
         dist = {self: 0}
@@ -244,8 +244,9 @@ class GraphNode:
             for edge in node.get_edges():
                 next_node = edge.get_destination()
                 if next_node not in dist:
-                    dist[next_node] = dist[node] + 1
-                    if dist[next_node] < distance:
+                    edge_distance = distance_fn(edge)
+                    if dist[node] + edge_distance <= distance:
+                        dist[next_node] = dist[node] + edge_distance
                         q.append(next_node)
 
-        return [node for node in dist.keys() if node != self]
+        return list(dist.keys())[1:]
