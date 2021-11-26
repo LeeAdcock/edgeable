@@ -1,6 +1,4 @@
-  ![Edgeable](/assets/logo.png)
-  
-  # Edgeable
+<img src="/assets/logo.png" alt="drawing" width="300"/>
 
 *Edgeable is an easy to use, in memory, peristable graph database. It is perfect for prototyping, exploring, and quick implementation in Python applications.* Graphs are made of Nodes with a string or numeric identifier and can have ny number of properties. Nodes are connected by directed or non-directed edges that can also have any number of properties. Additional convenience capabilities, like route detection through the graph, are built-in. Edgeable is thread safe for multi-threaded applications and easily handles databases with tens to hundreds of thousands of nodes.
 
