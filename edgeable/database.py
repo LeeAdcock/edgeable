@@ -15,9 +15,21 @@ logger = logging.getLogger("edgeable")
 class GraphDatabase:
     """Class representing the graph database."""
 
-    def __init__(self, properties={}):
+    def __init__(self, filename="graph.db", properties={}):
+        if filename and type(filename) is not str:
+            raise RuntimeError("Filename must be a string.")
+        if type(properties) is not dict:
+            raise RuntimeError("Properties be a dict.")
+
         self._graph = {}
         self._properties = properties
+        self._filename = filename
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.save()
 
     def get_nodes(self, criteria=lambda node: True):
         """Return all nodes, or nodes which match the optional filter function."""
@@ -61,7 +73,7 @@ class GraphDatabase:
     def set_properties(self, properties):
         """Set multiple properties from the provided dict. Properties not in the dict are not removed."""
         if type(properties) is not dict:
-            raise RuntimeError("Properties be a dict. {}".format(type(properties)))
+            raise RuntimeError("Properties be a dict.")
         self._properties = {**self._properties, **properties}
 
     def get_property(self, key):
@@ -98,17 +110,29 @@ class GraphDatabase:
         """Return the number of edges."""
         return sum([len(self._graph[node]._edges) for node in self._graph])
 
-    def load(self, filename="graph.db"):
-        if type(filename) is not str:
+    def load(self, filename=None):
+        """Load the database from the local filesystem. If filename is not specified
+        than the value or default from the constuctor will be used."""
+
+        if filename and type(filename) is not str:
             raise RuntimeError("Filename must be a string.")
+        if not filename and not self._filename:
+            raise RuntimeError("Filename must be specified")
+        filename = filename if filename else self._filename
         logger.info("load from file '%s'", filename)
         with gzip.open(filename, "rb") as f:
             self._graph = pickle.load(f)
 
     @GraphReadLock
-    def save(self, filename="graph.db"):
-        if type(filename) is not str:
+    def save(self, filename=None):
+        """Save the database to the local filesystem. If filename is not specified
+        than the value or default from the constuctor will be used."""
+
+        if filename and type(filename) is not str:
             raise RuntimeError("Filename must be a string.")
+        if not filename and not self._filename:
+            raise RuntimeError("Filename must be specified")
+        filename = filename if filename else self._filename
         logger.info("save to file '%s'", filename)
         temp_file = tempfile.NamedTemporaryFile(
             dir=os.path.dirname(filename), delete=False
