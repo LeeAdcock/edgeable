@@ -80,7 +80,8 @@ class GraphNode:
                 logger.info("detach '%s' from '%s'", self._id, destination.get_id())
                 del self._edges[destination.get_id()]
             if not directed:
-                del self._db._graph[destination.get_id()]._edges[self._id]
+                if self._id in self._db._graph[destination.get_id()]._edges:
+                    del self._db._graph[destination.get_id()]._edges[self._id]
             return was_connected
         else:
             was_connected = False
@@ -186,8 +187,12 @@ class GraphNode:
             skip = q.popleft()
             route = self.find_route_to(destination, skip)
             if route and len(skip) <= effort:
-                for step in route:
-                    if not step == self._id and not step == destination.get_id():
+                for step in route[1:-1]:
+                    if (
+                        not step == self._id
+                        and not step == destination.get_id()
+                        and not step in skip
+                    ):
                         q.append(skip + [step])
                 routes.append(route)
 
@@ -198,7 +203,9 @@ class GraphNode:
     # Based on code by Eryk Kopczyński
     # https://www.python.org/doc/essays/graphs/
     def find_route_to(self, destination, skip=[]):
-        """Find a route across the graph from the current node to the destination node, returned as an array of nodes. If no route exists, returns None."""
+        """Find a route across the graph from the current node to the
+        destination node, returned as an array of nodes. If no route
+        exists, returns None."""
 
         if type(destination) is not GraphNode:
             raise RuntimeError("Destination must be an instance of GraphNode.")
@@ -211,13 +218,13 @@ class GraphNode:
                 if (
                     next_node.get_id() not in dist
                     and destination.get_id() not in dist
-                    and not next_node.get_id() in skip
+                    and next_node not in skip
                 ):
                     dist[next_node.get_id()] = [
                         dist[node.get_id()],
-                        edge.get_destination(),
+                        next_node,
                     ]
-                    q.append(edge.get_destination())
+                    q.append(next_node)
 
         def flatten(route):
             return route if len(route) == 1 else flatten(route[0]) + [route[1]]

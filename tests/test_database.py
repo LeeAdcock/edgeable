@@ -119,5 +119,9 @@ class TestDatabase(unittest.TestCase):
 
     def test_delete_property(self):
         self.db.set_property("my_key", "my_value")
-        self.db.delete_property("my_key")
+        self.assertEqual(self.db.delete_property("my_key"), "my_value")
+        self.assertEqual(self.db.has_property("my_key"), False)
+
+    def test_delete__not_existing_property(self):
+        self.assertEqual(self.db.delete_property("my_key"), None)
         self.assertEqual(self.db.has_property("my_key"), False)

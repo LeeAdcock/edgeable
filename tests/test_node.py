@@ -6,6 +6,18 @@ class TestNode(unittest.TestCase):
     def setUp(self):
         self.db = GraphDatabase()
 
+    def test_eq(self):
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+
+        self.assertEqual(self.db.get_node("A"), self.db.get_node("A"))
+        self.assertNotEqual(self.db.get_node("A"), self.db.get_node("B"))
+
+    def test_str(self):
+        A = self.db.put_node("A")
+
+        self.assertEqual(str(A), "A")
+
     def test_add_node(self):
         self.db.put_node("A")
         self.assertEqual(self.db.get_node_count(), 1)
@@ -49,7 +61,13 @@ class TestNode(unittest.TestCase):
         A = self.db.put_node("A")
         A.set_property("my_key", "my_value")
 
-        A.delete_property("my_key")
+        self.assertEqual(A.delete_property("my_key"), "my_value")
+        self.assertEqual(A.has_property("my_key"), False)
+
+    def test_node_delete__not_existing_property(self):
+        A = self.db.put_node("A")
+
+        self.assertEqual(A.delete_property("my_key"), None)
         self.assertEqual(A.has_property("my_key"), False)
 
     def test_attach_node(self):
@@ -59,8 +77,8 @@ class TestNode(unittest.TestCase):
         self.assertEqual(len(A.get_edges()), 1)
         self.assertEqual(len(B.get_edges()), 1)
 
-        self.assertEqual(A.get_edges()[0].get_destination().get_id(), B.get_id())
-        self.assertEqual(B.get_edges()[0].get_destination().get_id(), A.get_id())
+        self.assertEqual(A.get_edge(B).get_destination().get_id(), B.get_id())
+        self.assertEqual(B.get_edge(A).get_destination().get_id(), A.get_id())
 
     def test_attach_node_directed(self):
         A = self.db.put_node("A")
@@ -69,7 +87,7 @@ class TestNode(unittest.TestCase):
         self.assertEqual(len(A.get_edges()), 1)
         self.assertEqual(len(B.get_edges()), 0)
 
-        self.assertEqual(A.get_edges()[0].get_destination().get_id(), B.get_id())
+        self.assertEqual(A.get_edge(B).get_destination().get_id(), B.get_id())
 
     def test_get_edges(self):
         A = self.db.put_node("A")
@@ -103,7 +121,7 @@ class TestNode(unittest.TestCase):
         A.attach(B, {"my_key_2": "my_value_2"})
 
         self.assertEqual(
-            A.get_edges()[0].get_properties(),
+            A.get_edge(B).get_properties(),
             {"my_key": "my_value", "my_key_2": "my_value_2"},
         )
 
@@ -118,12 +136,18 @@ class TestNode(unittest.TestCase):
         self.assertEqual(B.get_edge(A).get_destination(), A)
         self.assertEqual(A.get_edge(B).get_source(), A)
 
+    def test_get_edge_doesnt_exist(self):
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+
+        self.assertEqual(A.get_edge(B), None)
+
     def test_attach_node_with_properties(self):
         A = self.db.put_node("A")
         B = self.db.put_node("B")
         A.attach(B, {"my_key": "my_value"})
-        self.assertEqual(A.get_edges()[0].get_property("my_key"), "my_value")
-        self.assertEqual(B.get_edges()[0].get_property("my_key"), "my_value")
+        self.assertEqual(A.get_edge(B).get_property("my_key"), "my_value")
+        self.assertEqual(B.get_edge(A).get_property("my_key"), "my_value")
 
     def test_detach_node(self):
         A = self.db.put_node("A")
@@ -134,6 +158,12 @@ class TestNode(unittest.TestCase):
         self.assertEqual(len(A.get_edges()), 0)
         self.assertEqual(len(B.get_edges()), 0)
         self.assertEqual(self.db.get_node_count(), 2)
+
+    def test_detach_node_not_attached(self):
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+        
+        self.assertEqual(self.db.put_node("A").detach(B), False)
 
     def test_detach_node_directed(self):
         A = self.db.put_node("A")
@@ -204,3 +234,18 @@ class TestNode(unittest.TestCase):
 
         self.assertEqual(A.find_route_to(D), [A, D])
         self.assertEqual(D.find_route_to(A), [D, C, B, A])
+
+    def test_node_routes(self):
+        A = self.db.put_node("A")
+
+        B = self.db.put_node("B")
+        B.attach(A)
+
+        C = self.db.put_node("C")
+        C.attach(A)
+
+        D = self.db.put_node("D")
+        D.attach(C)
+        D.attach(B)
+
+        self.assertEqual(A.find_routes_to(D), [[A, B, D], [A, C, D]])

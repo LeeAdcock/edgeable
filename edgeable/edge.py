@@ -12,8 +12,8 @@ class GraphEdge:
     def __eq__(self, other):
         if isinstance(other, GraphEdge):
             return (
-                self._source_id == other.source.get_id()
-                and self._destination_id == other.destination.get_id()
+                self._source_id == other._source_id
+                and self._destination_id == other._destination_id
             )
         return False
 
