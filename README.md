@@ -6,7 +6,9 @@
 
 The Edgeable database library can easily be installed with pip using `pip install edgeable`.
 
-## Example
+## Examples
+
+### Create a graph instances and add nodes and edges
 
 ```
 from edgeable import GraphDatabase
@@ -15,6 +17,35 @@ db = new GraphDatabase()
 A = db.put_node('A', {'type': 'building'})
 B = db.put_node('B', {'type': 'classroom'})
 A.attach(B, {'relationship': 'contains'})
+```
+
+### Loading from a csv file of edges
+
+```
+from edgeable import GraphDatabase
+import csv
+
+db = GraphDatabase()
+with open('edges.csv') as csvfile:
+    reader = csv.reader(csvfile)
+    for row in reader:
+        node_a = db.put_node(row[0].strip())
+        node_b = db.put_node(row[1].strip())
+        node_1.attach(node_b)
+```
+
+### Write a csv file of edges
+
+```
+with open('edges.csv', 'w') as csvfile:
+    writer = csv.writer(csvfile)
+    for node in db.get_nodes():
+        print(node)
+        for edge in node.get_edges():
+            writer.writerow([
+                edge.get_source().get_id(), 
+                edge.get_destination().get_id()
+            ])
 ```
 
 ## Classes
