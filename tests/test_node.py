@@ -162,7 +162,7 @@ class TestNode(unittest.TestCase):
     def test_detach_node_not_attached(self):
         A = self.db.put_node("A")
         B = self.db.put_node("B")
-        
+
         self.assertEqual(self.db.put_node("A").detach(B), False)
 
     def test_detach_node_directed(self):
