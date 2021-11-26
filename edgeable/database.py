@@ -36,7 +36,7 @@ class GraphDatabase:
         if type(filter_fn) is not types.FunctionType:
             raise RuntimeError("Filter must be a function.")
 
-        return [node for node in self._graph.values() if criteria(node)]
+        return [node for node in self._graph.values() if filter_fn(node)]
 
     def get_node(self, id):
         """Get the node with the provided id, or None if it does not exist."""
