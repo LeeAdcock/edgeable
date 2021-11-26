@@ -1,5 +1,7 @@
 language: python
 python:
+  - "3.7"
+  - "3.8"
   - "3.9"
 install:
   - pip install -r requirements.txt
@@ -14,3 +16,6 @@ deploy:
   username: "__token__"
   password:
     secure: G3dvoneP0RGi7VNAe+tUvr3Sn89S/kCyNzNxjmy6EYYhJj2akR+AfFneccltbe8v3oRyoMQSV5oasP2ZW6L2/A4/ndrPrldjLzdSbCDwxsl0ftHpipzgFtBqEOGKcAH0ktAhaHeWm5okRU6K6GhMJiGpIy9LTANeBkDm1BkgMHi8JnsqUyjNXJujuLMJTtmwVLsZH6Ibpzm4Yp1Z9R1mFNl+wsFgLrZf5cD18ONoOI/SGewXzK6Fxkf5q3uHAYBLzMGPFgdh81gUIWnrZUVYhkwZK/aFElX5EajDBxf99nOmVgj1ZrOphQjoMDTjWaDK5tbVLesIXV/k9fNT1S5kSbM2MIHV7IsUDadlXrFpJmTqETk9slDtEcVvcKCqvkihlAooMECvw/Yozr75+/90A3xhRAv0M+WBEbbLScA8OSRlpaLno2/tOweGPin9VFRNtWcwHke2EsqeLKMTQtRxZ/deMu2bSkiKzssk1EO91hpnHlu04Q22YFJdrxOGGVfsBkKMWTt9SA/uRboTgTa1nSpWRI+ViginWxHG7A9ogPFlgGpCAxOdwa9wVIq4a02s7hw/9YFaeDWfliRJjbMoxJYwPiX5fVyorKcNhvCnvMhPljPLfK3aXLmtHrVv0FCUtNBz2WEjokueWnD/w74WhiqkVAIXttAzCelfC3yhAXk=
+  on:
+    branch: master
+    condition: $TRAVIS_PYTHON_VERSION = 3.7
