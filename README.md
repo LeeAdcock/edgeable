@@ -1,6 +1,8 @@
 <img src="https://raw.githubusercontent.com/LeeAdcock/edgeable/master/assets/logo.png" alt="Edgeable" width="300"/>
 
-*Edgeable is an easy to use, in memory, peristable graph database. It is perfect for prototyping, exploring, and quick implementation in Python applications.* Graphs are made of nodes with a string or numeric identifier and can have any number of properties. Nodes are connected by directed or non-directed edges that can also have any number of properties. Additional convenience capabilities, like route detection through the graph, are built-in. Edgeable is thread safe for multi-threaded applications and easily handles databases with tens to hundreds of thousands of nodes.
+*Edgeable is an easy to use, in memory, peristable graph database. It is perfect for prototyping, exploring, and quick implementation in Python applications.* The library is written completely in Python, supporting 3.6+ and Pypy. 
+
+In Edgeable, graphs are made of nodes with a string or numeric identifier and can have any number of properties. Nodes are connected by directed or non-directed edges that can also have any number of properties. Additional convenience capabilities, like route detection through the graph, are built-in. Edgeable is thread safe for multi-threaded applications and easily handles databases with tens to hundreds of thousands of nodes.
 
 ## Installation
 
@@ -13,9 +15,9 @@ The Edgeable database library can easily be installed with pip using `pip instal
 ```
 from edgeable import GraphDatabase
 
-db = new GraphDatabase()
-A = db.put_node('A', {'type': 'building'})
-B = db.put_node('B', {'type': 'classroom'})
+graph = new GraphDatabase()
+A = graph.put_node('A', {'type': 'building'})
+B = graph.put_node('B', {'type': 'classroom'})
 A.attach(B, {'relationship': 'contains'})
 ```
 
@@ -25,12 +27,12 @@ A.attach(B, {'relationship': 'contains'})
 from edgeable import GraphDatabase
 import csv
 
-db = GraphDatabase()
+graph = GraphDatabase()
 with open('edges.csv') as csvfile:
     reader = csv.reader(csvfile)
     for row in reader:
-        node_a = db.put_node(row[0].strip())
-        node_b = db.put_node(row[1].strip())
+        node_a = graph.put_node(row[0].strip())
+        node_b = graph.put_node(row[1].strip())
         node_1.attach(node_b)
 ```
 
@@ -39,8 +41,7 @@ with open('edges.csv') as csvfile:
 ```
 with open('edges.csv', 'w') as csvfile:
     writer = csv.writer(csvfile)
-    for node in db.get_nodes():
-        print(node)
+    for node in graph.get_nodes():
         for edge in node.get_edges():
             writer.writerow([
                 edge.get_source().get_id(), 
@@ -55,6 +56,17 @@ The `GraphDatabase` class represents the entire graph. Instances of `GraphDataba
 
 ##### Graph Constructor
 The `GraphDatabase()` constructor is used to create a new graph database instance.  
+
+The `with` syntax can be used to initialize the graph and ensure it saved once the block is exicted.
+
+```
+from edgeable import GraphDatabase
+
+with new GraphDatabase(filename="mygraph.db") as graph:
+    A = graph.put_node('A', {'type': 'building'})
+    B = graph.put_node('B', {'type': 'classroom'})
+    A.attach(B, {'relationship': 'contains'})
+```
 
 ##### Graph Persistance
 - `load(filename="graph.db")` - Load the database from the file system. Optionally takes a custom filename.
