@@ -77,7 +77,7 @@ class TestDatabase(unittest.TestCase):
     def test_with_statement(self):
 
         with GraphDatabase() as db:
-            self.db.put_node("A")
+            db.put_node("A")
 
         self.assertEqual(os.path.exists("graph.db"), True)
         os.remove("graph.db")
@@ -85,7 +85,7 @@ class TestDatabase(unittest.TestCase):
     def test_with_statement_custom_filename(self):
 
         with GraphDatabase(filename="custom.db") as db:
-            self.db.put_node("A")
+            db.put_node("A")
 
         self.assertEqual(os.path.exists("custom.db"), True)
         os.remove("custom.db")

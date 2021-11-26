@@ -10,8 +10,8 @@ class TestNode(unittest.TestCase):
         A = self.db.put_node("A")
         B = self.db.put_node("B")
 
-        self.assertEqual(self.db.get_node("A"), self.db.get_node("A"))
-        self.assertNotEqual(self.db.get_node("A"), self.db.get_node("B"))
+        self.assertEqual(A, A)
+        self.assertNotEqual(A, B)
 
     def test_str(self):
         A = self.db.put_node("A")
@@ -163,7 +163,7 @@ class TestNode(unittest.TestCase):
         A = self.db.put_node("A")
         B = self.db.put_node("B")
 
-        self.assertEqual(self.db.put_node("A").detach(B), False)
+        self.assertEqual(A.detach(B), False)
 
     def test_detach_node_directed(self):
         A = self.db.put_node("A")
