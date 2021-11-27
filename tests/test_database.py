@@ -44,12 +44,23 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(self.db.get_edge_count(), 2)
 
     def test_get_nodes(self):
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+
+        self.assertEqual(self.db.get_nodes(), [A, B])
+
+    def test_get_nodes_filter_function(self):
         A = self.db.put_node("A", {"flag": True})
         self.db.put_node("B")
 
         nodes = self.db.get_nodes(lambda node: node.get_property("flag"))
         self.assertEqual(len(nodes), 1)
         self.assertEqual(nodes[0], A)
+
+    def test_get_node(self):
+        A = self.db.put_node("A")
+
+        self.assertEqual(self.db.get_node("A"), A)
 
     def test_add_node_with_properties(self):
         A = self.db.put_node("A", {"my_key": "my_value"})
