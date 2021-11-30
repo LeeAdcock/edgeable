@@ -38,6 +38,18 @@ class GraphDatabase:
 
         return [node for node in self._graph.values() if filter_fn(node)]
 
+    def get_edges(self, filter_fn=lambda edge: True):
+        """Return all edges, or edges which match the optional filter function."""
+        if type(filter_fn) is not types.FunctionType:
+            raise RuntimeError("Filter must be a function.")
+
+        return [
+            edge
+            for edges in [node.get_edges() for node in self.get_nodes()]
+            for edge in edges
+            if filter_fn(edge)
+        ]
+
     def get_node(self, id):
         """Get the node with the provided id, or None if it does not exist."""
         return self._graph[id] if self.has_node(id) else None

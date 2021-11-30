@@ -78,6 +78,7 @@ with new GraphDatabase(filename="mygraph.db") as graph:
 - `has_node(id)` - Taking a node identifier, return an instance of type `GraphNode`.
 - `get_node(id)` - Taking a node identifier, return an instance of type `GraphNode` if it exists in the database. Returns `None` otherwise.
 - `get_nodes(criteria=lambda node: True)` - Retrieve a list of `GraphNode` instances from the database. If the optional criteria is not provided, all nodes are returned, otherwise the criteria function is used to return only matching nodes.
+- `edges(criteria=lambda node: True)` - Retrieve a list of `GraphEdge` instances from the database. If the optional criteria is not provided, all edges are returned, otherwise the criteria function is used to return only matching edges.
 - `get_node_count()` - Return the number of nodes in the database.
 - `get_edge_count()` - Return the number of edges in the database.
 

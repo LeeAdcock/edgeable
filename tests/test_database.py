@@ -43,6 +43,22 @@ class TestDatabase(unittest.TestCase):
 
         self.assertEqual(self.db.get_edge_count(), 2)
 
+    def test_get_edges(self):
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+        A.attach(B)
+
+        self.assertEqual(self.db.get_edges(), [A.get_edge(B), B.get_edge(A)])
+
+    def test_get_edges_filter_function(self):
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+        A.attach(B)
+
+        self.assertEqual(
+            self.db.get_edges(lambda edge: edge.get_source() == A), [A.get_edge(B)]
+        )
+
     def test_get_nodes(self):
         A = self.db.put_node("A")
         B = self.db.put_node("B")
