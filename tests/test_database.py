@@ -59,6 +59,20 @@ class TestDatabase(unittest.TestCase):
             self.db.get_edges(lambda edge: edge.get_source() == A), [A.get_edge(B)]
         )
 
+    def test_get_edges_filter_function(self):
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+        A.attach(B)
+
+        self.assertEqual(
+            self.db.get_edges(edge_filter_fn=lambda edge: edge.get_source() == A),
+            [A.get_edge(B)],
+        )
+
+        self.assertEqual(
+            self.db.get_edges(node_filter_fn=lambda node: node == A), [A.get_edge(B)]
+        )
+
     def test_get_nodes(self):
         A = self.db.put_node("A")
         B = self.db.put_node("B")

@@ -38,16 +38,20 @@ class GraphDatabase:
 
         return [node for node in self._graph.values() if filter_fn(node)]
 
-    def get_edges(self, filter_fn=lambda edge: True):
+    def get_edges(
+        self, edge_filter_fn=lambda edge: True, node_filter_fn=lambda node: True
+    ):
         """Return all edges, or edges which match the optional filter function."""
-        if type(filter_fn) is not types.FunctionType:
+        if type(edge_filter_fn) is not types.FunctionType:
             raise RuntimeError("Filter must be a function.")
 
         return [
             edge
-            for edges in [node.get_edges() for node in self.get_nodes()]
+            for edges in [
+                node.get_edges() for node in self.get_nodes() if node_filter_fn(node)
+            ]
             for edge in edges
-            if filter_fn(edge)
+            if edge_filter_fn(edge)
         ]
 
     def get_node(self, id):
