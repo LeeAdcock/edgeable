@@ -16,7 +16,7 @@ class GraphDatabase:
     """Class representing the graph database."""
 
     def __init__(self, filename="graph.db", properties={}):
-        if filename and type(filename) is not str:
+        if type(filename) is not str:
             raise RuntimeError("Filename must be a string.")
         if type(properties) is not dict:
             raise RuntimeError("Properties be a dict.")
@@ -24,6 +24,9 @@ class GraphDatabase:
         self._graph = {}
         self._properties = properties
         self._filename = filename
+
+        if os.path.exists(filename):
+            self.load()
 
     def __enter__(self):
         return self
@@ -125,33 +128,22 @@ class GraphDatabase:
         """Return the number of edges."""
         return sum([len(self._graph[node]._edges) for node in self._graph])
 
-    def load(self, filename=None):
-        """Load the database from the local filesystem. If filename is not specified
-        than the value or default from the constuctor will be used."""
+    def load(self):
+        """Load the database from the local filesystem."""
 
-        if filename and type(filename) is not str:
-            raise RuntimeError("Filename must be a string.")
-        if not filename and not self._filename:
-            raise RuntimeError("Filename must be specified")
-        filename = filename if filename else self._filename
-        logger.info("load from file '%s'", filename)
-        with gzip.open(filename, "rb") as f:
+        logger.info("load from file '%s'", self._filename)
+        with gzip.open(self._filename, "rb") as f:
             self._graph = pickle.load(f)
 
     @GraphReadLock
-    def save(self, filename=None):
-        """Save the database to the local filesystem. If filename is not specified
-        than the value or default from the constuctor will be used."""
+    def save(self):
+        """Save the database to the local filesystem."""
 
-        if filename and type(filename) is not str:
-            raise RuntimeError("Filename must be a string.")
-        if not filename and not self._filename:
-            raise RuntimeError("Filename must be specified")
-        filename = filename if filename else self._filename
-        logger.info("save to file '%s'", filename)
+        logger.info("save to file '%s'", self._filename)
         temp_file = tempfile.NamedTemporaryFile(
-            dir=os.path.dirname(filename), delete=False
+            prefix=self._filename,
+            dir=os.path.dirname(self._filename), delete=False
         )
         with gzip.open(temp_file, "wb") as f:
             pickle.dump(self._graph, f, protocol=4)
-        os.replace(temp_file.name, filename)
+        os.replace(temp_file.name, self._filename)

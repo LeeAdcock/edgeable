@@ -55,9 +55,9 @@ with open('edges.csv', 'w') as csvfile:
 The `GraphDatabase` class represents the entire graph. Instances of `GraphDatabase` provide the ability to retrieve and creates nodes, as well as save or load from the file system.
 
 ##### Graph Constructor
-The `GraphDatabase()` constructor is used to create a new graph database instance.  
+The `GraphDatabase(filename="graph.db")` constructor is used to create a new graph database instance. The file name used to persist the database can optionally be ovewritten. If a persisted database file already exists, it will be loaded.
 
-The `with` syntax can be used to initialize the graph and ensure it saved once the block is exicted.
+The `with` syntax can be used to initialize the graph and ensure it is saved once the block is exited.
 
 ```
 from edgeable import GraphDatabase
@@ -69,16 +69,16 @@ with new GraphDatabase(filename="mygraph.db") as graph:
 ```
 
 ##### Graph Persistance
-- `load(filename="graph.db")` - Load the database from the file system. Optionally takes a custom filename.
-- `save(filename="graph.db")` - Save the database to the file system. Optionally takes a custom filename.
+- `load()` - Reload the graph from the file system. The persisted file is loaded automatically when the `GraphDatabase` instance is initialized, calling `load()` is only neccessary to reload it, overwriting any changes.
+- `save()` - Save the graph to the file system. When using the `with` syntax, this is called automatically. Save operations are done in a way to be thread-safe and avoid corruption if the application terminates during a write. 
 
 ##### Graph Nodes and Edges
 
 - `put_node(id, properties={})` - Creates or retrieves the instance of `GraphNode` with the provided identifier. The optionally provided properties are set or updated on the node.
 - `has_node(id)` - Taking a node identifier, return an instance of type `GraphNode`.
 - `get_node(id)` - Taking a node identifier, return an instance of type `GraphNode` if it exists in the database. Returns `None` otherwise.
-- `get_nodes(filter_fn=lambda node: True)` - Retrieve a list of `GraphNode` instances from the database. If the optional criteria is not provided, all nodes are returned, otherwise the criteria function is used to return only matching nodes.
-- `edges(edge_filter_fn=lambda node: True, node_filter_fn=lambda node: True)` - Retrieve a list of `GraphEdge` instances from the database. If the optional criteria are not provided, all edges are returned, otherwise the function is used to return only matching edges and/or edges of matching nodes.
+- `get_nodes(filter_fn=lambda node: True)` - Retrieve a list of `GraphNode` instances from the database. If the optional filter function is not provided, all nodes are returned, otherwise the filter function is used to return only matching nodes.
+- `edges(edge_filter_fn=lambda edge: True, node_filter_fn=lambda node: True)` - Retrieve a list of `GraphEdge` instances from the database. If the optional filter functions are not provided, all edges are returned, otherwise the function is used to return only matching edges.
 - `get_node_count()` - Return the number of nodes in the database.
 - `get_edge_count()` - Return the number of edges in the database.
 
@@ -98,7 +98,7 @@ The `GraphNode` class represent nodes and associated properties within the graph
 ##### Node Edges
 - `attach(destination, properties={}, directed=False)` - Attach the current node to the destination node with a new edge. The optionally provided properties will be set on the edge, whether it exists or is created new. The releationship will be nondirectional unless `directed` is set to `True`. The method returns a boolean indicating if a new edge was created between the nodes.
 - `detach(destination=None, directed=False)` - Detach the current node from the destination node, removing any connecting edge. If no destination is provided, all attached nodes are detached. If `directed` is set to `True`, then the edge is only removed in the current direction, any edge in the other directions is untouched. The method returns a boolean indicating if any edges were removed.
-- `get_edges(criteria=lambda edge: True)` - Retrieve a list of `GraphEdge` instances from the database. If the optional criteria is not provided, all edges for the node are returned, otherwise the criteria function is used to return only matching edges.
+- `get_edges(filter_fn=lambda edge: True)` - Retrieve a list of `GraphEdge` instances from the database. If the optional filter function is not provided, all edges for the node are returned, otherwise the filter function is used to return only matching edges.
 - `get_edge(destination)` - Retrieve the edge that leads from the current node to the provided destination node.
 - `has_edge(destination)` - Returns a boolean indicating whether there is an edge from the current node to the destination node.
 

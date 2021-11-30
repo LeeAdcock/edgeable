@@ -34,19 +34,3 @@ class TestDatabase(unittest.TestCase):
 
         self.assertEqual(os.path.exists("custom.db"), True)
         os.remove("custom.db")
-
-    def test_persistance_custom_filename(self):
-
-        A = self.db.put_node("A")
-        filename = "custom.db"
-
-        self.db.save(filename=filename)
-        A.delete()
-
-        self.assertEqual(self.db.get_node_count(), 0)
-        self.assertEqual(os.path.exists(filename), True)
-
-        self.db.load(filename)
-        self.assertEqual(self.db.get_node_count(), 1)
-
-        os.remove(filename)
