@@ -141,8 +141,7 @@ class GraphDatabase:
 
         logger.info("save to file '%s'", self._filename)
         temp_file = tempfile.NamedTemporaryFile(
-            prefix=self._filename,
-            dir=os.path.dirname(self._filename), delete=False
+            prefix=self._filename, dir=os.path.dirname(self._filename), delete=False
         )
         with gzip.open(temp_file, "wb") as f:
             pickle.dump(self._graph, f, protocol=4)
