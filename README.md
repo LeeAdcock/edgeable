@@ -69,7 +69,7 @@ with new GraphDatabase(filename="mygraph.db") as graph:
 ```
 
 ##### Graph Persistance
-- `load()` - Reload the graph from the file system. The persisted file is loaded automatically when the `GraphDatabase` instance is initialized, calling `load()` is only neccessary to reload it, overwriting any changes.
+- `reload()` - Reload the graph from the file system. The persisted file is loaded automatically when the `GraphDatabase` instance is initialized, calling `load()` is only neccessary to reload it, overwriting any changes.
 - `save()` - Save the graph to the file system. When using the `with` syntax, this is called automatically. Save operations are done in a way to be thread-safe and avoid corruption if the application terminates during a write. 
 
 ##### Graph Nodes and Edges

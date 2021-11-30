@@ -26,7 +26,7 @@ class GraphDatabase:
         self._filename = filename
 
         if os.path.exists(filename):
-            self.load()
+            self.reload()
 
     def __enter__(self):
         return self
@@ -128,8 +128,8 @@ class GraphDatabase:
         """Return the number of edges."""
         return sum([len(self._graph[node]._edges) for node in self._graph])
 
-    def load(self):
-        """Load the database from the local filesystem."""
+    def reload(self):
+        """Reload the database from the local filesystem."""
 
         logger.info("load from file '%s'", self._filename)
         with gzip.open(self._filename, "rb") as f:

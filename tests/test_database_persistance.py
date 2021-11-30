@@ -14,7 +14,7 @@ class TestDatabase(unittest.TestCase):
         A.delete()
         self.assertEqual(self.db.get_node_count(), 0)
 
-        self.db.load()
+        self.db.reload()
         self.assertEqual(self.db.get_node_count(), 1)
 
         os.remove("graph.db")
