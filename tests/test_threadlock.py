@@ -93,10 +93,8 @@ class TestThreadLock(unittest.TestCase):
         except:
             pass
 
-
         self.assertEqual(self.writers, 0)
         self.assertEqual(self.readers, 0)
-
 
     def test_mix(self):
 
