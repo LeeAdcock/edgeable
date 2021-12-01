@@ -1,22 +1,23 @@
 import threading
 
 
-_modify_ready = threading.Condition(threading.Lock())
-_modifiers = 0
-
+_lock = threading.Condition(threading.Lock())
+_readers = 0
+_writers = 0
 
 def GraphModifyLock(func):
-    """Acquire a modify lock. Blocks only if a thread has
-    acquired the read lock."""
+    """Lock for modification, reading operations will block."""
 
     def inner(*args, **kwargs):
-        global _modifiers
-        global _modify_ready
-        _modify_ready.acquire()
-        try:
-            _modifiers += 1
-        finally:
-            _modify_ready.release()
+        global _lock
+        global _readers
+        global _writers
+
+        _lock.acquire()
+        _lock.wait_for(lambda: _readers==0)
+        _writers += 1
+        _lock.release()
+
         value = None
         exception = None
         try:
@@ -24,13 +25,12 @@ def GraphModifyLock(func):
         except Exception as e:
             exception = e
         finally:
-            _modify_ready.acquire()
-            try:
-                _modifiers -= 1
-                if not _modifiers:
-                    _modify_ready.notifyAll()
-            finally:
-                _modify_ready.release()
+            _lock.acquire()
+            _writers -= 1
+            if not _writers:
+                _lock.notify_all()
+            _lock.release()
+
             if exception:
                 raise exception
             return value
@@ -39,23 +39,32 @@ def GraphModifyLock(func):
 
 
 def GraphReadLock(func):
-    """Acquire a read lock. Blocks until there are no
-    acquired read or modify locks."""
+    """Lock for reading, modification operations will block."""
 
     def inner(*args, **kwargs):
-        global _modifiers
-        global _modify_ready
-        _modify_ready.acquire()
-        while _modifiers > 0:
-            _modify_ready.wait()
+        global _lock
+        global _readers
+        global _writers
+
+        _lock.acquire()
+        _lock.wait_for(lambda: _writers==0)
+        _readers += 1
+        _lock.release()
+
         value = None
         exception = None
         try:
             value = func(*args, **kwargs)
-            _modify_ready.release()
         except Exception as e:
             exception = e
         finally:
+
+            _lock.acquire()
+            _readers -= 1
+            if not _readers:
+                _lock.notify_all()
+            _lock.release()
+
             if exception:
                 raise exception
             return value
