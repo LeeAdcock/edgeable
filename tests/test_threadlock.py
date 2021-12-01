@@ -38,13 +38,18 @@ class TestThreadLock(unittest.TestCase):
                 try:
                     task = self.q.get()
                     task[0]()
-                except Exception as e:
-                    pass
                 finally:
                     self.q.task_done()
 
         for i in range(3):
             threading.Thread(target=worker, daemon=True).start()
+
+    def test_read(self):
+
+        self.do_safe_reading()
+
+        self.assertEqual(self.writers, 0)
+        self.assertEqual(self.readers, 0)
 
     def test_write_than_read(self):
 
@@ -54,13 +59,16 @@ class TestThreadLock(unittest.TestCase):
         self.q.put((self.do_safe_reading, ()))
         self.q.join()
 
-    def test_failed_write_than_read(self):
+    def test_read_raises_exception(self):
 
-        self.q.put((self.do_safe_writing, ()))
-        self.q.put((self.do_safe_writing_fail, ()))
-        self.q.put((self.do_safe_reading, ()))
-        self.q.put((self.do_safe_reading, ()))
-        self.q.join()
+        try:
+            self.do_safe_reading_fail()
+            self.assertTrue(False)
+        except:
+            pass
+
+        self.assertEqual(self.writers, 0)
+        self.assertEqual(self.readers, 0)
 
     def test_read_than_writes(self):
 
@@ -70,13 +78,25 @@ class TestThreadLock(unittest.TestCase):
         self.q.put((self.do_safe_writing, ()))
         self.q.join()
 
-    def test_failed_read_than_writes(self):
+    def test_write(self):
 
-        self.q.put((self.do_safe_reading, ()))
-        self.q.put((self.do_safe_reading_fail, ()))
-        self.q.put((self.do_safe_writing, ()))
-        self.q.put((self.do_safe_writing, ()))
-        self.q.join()
+        self.do_safe_writing()
+
+        self.assertEqual(self.writers, 0)
+        self.assertEqual(self.readers, 0)
+
+    def test_write_raises_exception(self):
+
+        try:
+            self.do_safe_writing_fail()
+            self.assertTrue(False)
+        except:
+            pass
+
+
+        self.assertEqual(self.writers, 0)
+        self.assertEqual(self.readers, 0)
+
 
     def test_mix(self):
 
