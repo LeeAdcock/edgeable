@@ -5,6 +5,7 @@ _lock = threading.Condition(threading.Lock())
 _readers = 0
 _writers = 0
 
+
 def GraphModifyLock(func):
     """Lock for modification, reading operations will block."""
 
@@ -14,7 +15,7 @@ def GraphModifyLock(func):
         global _writers
 
         _lock.acquire()
-        _lock.wait_for(lambda: _readers==0)
+        _lock.wait_for(lambda: _readers == 0)
         _writers += 1
         _lock.release()
 
@@ -47,7 +48,7 @@ def GraphReadLock(func):
         global _writers
 
         _lock.acquire()
-        _lock.wait_for(lambda: _writers==0)
+        _lock.wait_for(lambda: _writers == 0)
         _readers += 1
         _lock.release()
 

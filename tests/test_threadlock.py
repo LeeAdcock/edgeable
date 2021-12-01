@@ -11,18 +11,18 @@ class TestThreadLock(unittest.TestCase):
         self.writers = 0
 
         def do_writing():
-            self.writers=self.writers+1
+            self.writers = self.writers + 1
             self.assertEqual(self.readers, 0)
             self.assertGreaterEqual(self.writers, 1)
-            time.sleep(.25)
-            self.writers=self.writers-1
+            time.sleep(0.25)
+            self.writers = self.writers - 1
 
         def do_reading():
-            self.readers=self.readers+1
+            self.readers = self.readers + 1
             self.assertEqual(self.writers, 0)
             self.assertGreaterEqual(self.readers, 1)
-            time.sleep(.25)
-            self.readers=self.readers-1
+            time.sleep(0.25)
+            self.readers = self.readers - 1
 
         def do_fail():
             raise Exception()

@@ -10,4 +10,4 @@ lint :
 	@ black **/*.py 
 
 test :
-	@ coverage run --branch --source edgeable -m pytest ./tests/test_*.py -s -v && coverage report && coverage html
+	@ pytest ./tests/test_*.py -s -v && coverage report && coverage html
