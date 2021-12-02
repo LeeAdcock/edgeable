@@ -40,9 +40,13 @@ class GraphEdge:
         self._properties[key] = value
 
         if not directed:
-            self._db._graph[self._destination_id]._edges[self._source_id]._properties[
-                key
-            ] = value
+            if (
+                self._destination_id in self._db._graph
+                and self._source_id in self._db._graph[self._destination_id]._edges
+            ):
+                self._db._graph[self._destination_id]._edges[
+                    self._source_id
+                ]._properties[key] = value
 
     @GraphModifyLock
     def set_properties(self, properties, directed=False):
@@ -53,11 +57,15 @@ class GraphEdge:
             raise RuntimeError("Key properties be a dict.")
         self._properties = {**self._properties, **properties}
         if not directed:
-            destination = self._db._graph[self._destination_id]
-            destination._edges[self._source_id]._properties = {
-                **destination._edges[self._source_id]._properties,
-                **properties,
-            }
+            if (
+                self._destination_id in self._db._graph
+                and self._source_id in self._db._graph[self._destination_id]._edges
+            ):
+                destination = self._db._graph[self._destination_id]
+                destination._edges[self._source_id]._properties = {
+                    **destination._edges[self._source_id]._properties,
+                    **properties,
+                }
 
     def get_property(self, key):
         """Get the property value."""

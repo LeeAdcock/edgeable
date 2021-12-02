@@ -56,8 +56,13 @@ class GraphNode:
                 db=self._db, source=self, destination=destination, properties=properties
             )
             self._edges[destination.get_id()] = edge
+
             if not directed:
                 destination.attach(self, properties, directed=False)
+
+            # run create edge callbacks
+            for fn in self._db._on_create_edge.values():
+                fn(edge)
         else:
             self._edges[destination.get_id()]._properties = {
                 **self._edges[destination.get_id()]._properties,

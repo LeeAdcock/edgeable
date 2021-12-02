@@ -5,6 +5,7 @@ import types
 import os
 import tempfile
 import numbers
+import uuid
 
 from edgeable import GraphNode, GraphModifyLock, GraphReadLock
 
@@ -24,6 +25,12 @@ class GraphDatabase:
         self._graph = {}
         self._properties = properties
         self._filename = filename
+
+        # callbacks
+        self._on_create_node = {}
+        self._on_create_edge = {}
+
+        # todo: delete, attach, edit properties
 
         if os.path.exists(filename):
             self.reload()
@@ -75,10 +82,28 @@ class GraphDatabase:
             logger.info("create node '%s'", id)
             self._graph[id] = GraphNode(self, id)
             self._graph[id]._properties = properties.copy()
+            for fn in self._on_create_node.values():
+                fn(self._graph[id])
         else:
             self._graph[id]._properties = {**self._graph[id]._properties, **properties}
 
         return self._graph[id]
+
+    def on_create_node(self, fn, id=None):
+        id = id if id else uuid.uuid1()
+        if id in self._on_create_node and fn is None:
+            del self._on_create_node[id]
+        else:
+            self._on_create_node[id] = fn
+        return id
+
+    def on_create_edge(self, fn, id=None):
+        id = id if id else uuid.uuid1()
+        if id in self._on_create_edge and fn is None:
+            del self._on_create_edge[id]
+        else:
+            self._on_create_edge[id] = fn
+        return id
 
     @GraphModifyLock
     def set_property(self, key, value):

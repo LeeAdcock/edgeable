@@ -3,7 +3,7 @@ import os
 from edgeable import GraphDatabase
 
 
-class TestDatabase(unittest.TestCase):
+class TestDatabaseProperties(unittest.TestCase):
     def setUp(self):
         self.db = GraphDatabase()
 

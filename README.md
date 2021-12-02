@@ -90,6 +90,13 @@ with new GraphDatabase(filename="mygraph.db") as graph:
 - `has_property(key)` - Returns a boolean indicating whether the property key is defined.
 - `delete_property(key)` - Removes a property.
 
+##### Graph Callbacks
+
+Event callbacks can be provided that will have the opportunity to process objects in the graph. Multiple callbacks can be defined for an event type. Each callbacks has an identifier, this can be specified when created or one will automatically be generated and returned. The id can be later used to overwrite or remove (set to `None`) the callback.
+
+- `on_create_node(fn, id=None)` - Sets or changes a callback that is called when a node is added to the graph.
+- `on_create_edge(fn, id=None)` - Sets or changes a callback that is called when a edge is added to the graph.
+
 ### Node Class
 The `GraphNode` class represent nodes and associated properties within the graph. Nodes can be connected through directed or non-directed edges.
 

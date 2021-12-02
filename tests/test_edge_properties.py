@@ -2,7 +2,7 @@ import unittest
 from edgeable import GraphDatabase
 
 
-class TestEdge(unittest.TestCase):
+class TestEdgeProperties(unittest.TestCase):
     def setUp(self):
         self.db = GraphDatabase()
 
