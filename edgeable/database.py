@@ -26,14 +26,18 @@ class GraphDatabase:
         self._properties = properties
         self._filename = filename
 
+        if os.path.exists(filename):
+            self.reload()
+
+    def __new__(cls, *args, **kwargs):
+        self = super().__new__(cls)
+
         # callbacks
         self._on_create_node = {}
         self._on_delete_node = {}
         self._on_create_edge = {}
         self._on_delete_edge = {}
-
-        if os.path.exists(filename):
-            self.reload()
+        return self
 
     def __getstate__(self):
         return {k: v for (k, v) in self.__dict__.items() if "_on" not in k}

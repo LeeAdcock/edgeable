@@ -44,3 +44,13 @@ class TestDatabasePersistance(unittest.TestCase):
 
         with GraphDatabase() as db:
             pass
+
+    def test_with_event_handlers2(self):
+        def my_function(node):
+            return False
+
+        with GraphDatabase() as db:
+            pass
+
+        with GraphDatabase() as db:
+            db.on_create_node(my_function)
