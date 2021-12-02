@@ -32,10 +32,11 @@ class GraphDatabase:
         self._on_create_edge = {}
         self._on_delete_edge = {}
 
-        # todo: delete, attach, edit properties
-
         if os.path.exists(filename):
             self.reload()
+
+    def __getstate__(self):
+        return {k: v for (k, v) in self.__dict__.items() if "_on" not in k}
 
     def __enter__(self):
         return self
@@ -81,7 +82,7 @@ class GraphDatabase:
             raise RuntimeError("Node id must be a string or number.")
 
         if not self.has_node(id):
-            logger.info("create node '%s'", id)
+            logger.info("create node '%s' (%s)", id, properties)
             node = GraphNode(self, id)
             node._properties = properties.copy()
 

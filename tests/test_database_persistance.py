@@ -34,3 +34,13 @@ class TestDatabasePersistance(unittest.TestCase):
 
         self.assertEqual(os.path.exists("custom.db"), True)
         os.remove("custom.db")
+
+    def test_with_event_handlers(self):
+        def my_function(node):
+            return False
+
+        with GraphDatabase() as db:
+            db.on_create_node(my_function)
+
+        with GraphDatabase() as db:
+            pass
