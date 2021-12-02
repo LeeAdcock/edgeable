@@ -86,10 +86,22 @@ class GraphNode:
             was_connected = destination.get_id() in self._edges
             if was_connected:
                 logger.info("detach '%s' from '%s'", self._id, destination.get_id())
+                edge = self._edges[destination.get_id()]
                 del self._edges[destination.get_id()]
+
+                # run delete node callbacks
+                for fn in self._db._on_delete_edge.values():
+                    fn(edge)
+
             if not directed:
                 if self._id in self._db._graph[destination.get_id()]._edges:
+                    edge = self._db._graph[destination.get_id()]._edges[self._id]
                     del self._db._graph[destination.get_id()]._edges[self._id]
+
+                    # run delete node callbacks
+                    for fn in self._db._on_delete_edge.values():
+                        fn(edge)
+
             return was_connected
         else:
             was_connected = False
@@ -106,6 +118,10 @@ class GraphNode:
             raise RuntimeError("Node does not existing in graph")
         self.detach()
         del self._db._graph[self._id]
+
+        # run delete node callbacks
+        for fn in self._db._on_delete_node.values():
+            fn(self)
 
     @GraphModifyLock
     def set_property(self, key, value):

@@ -96,6 +96,8 @@ Event callbacks can be provided that will have the opportunity to process object
 
 - `on_create_node(fn, id=None)` - Sets or changes a callback that is called when a node is added to the graph.
 - `on_create_edge(fn, id=None)` - Sets or changes a callback that is called when a edge is added to the graph.
+- `on_delete_node(fn, id=None)` - Sets or changes a callback that is called when a node is deleted from the graph.
+- `on_delete_edge(fn, id=None)` - Sets or changes a callback that is called when a edge is deleted from the graph.
 
 ### Node Class
 The `GraphNode` class represent nodes and associated properties within the graph. Nodes can be connected through directed or non-directed edges.

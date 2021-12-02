@@ -28,7 +28,9 @@ class GraphDatabase:
 
         # callbacks
         self._on_create_node = {}
+        self._on_delete_node = {}
         self._on_create_edge = {}
+        self._on_delete_edge = {}
 
         # todo: delete, attach, edit properties
 
@@ -82,6 +84,8 @@ class GraphDatabase:
             logger.info("create node '%s'", id)
             self._graph[id] = GraphNode(self, id)
             self._graph[id]._properties = properties.copy()
+
+            # run create node event callbacks
             for fn in self._on_create_node.values():
                 fn(self._graph[id])
         else:
@@ -97,12 +101,28 @@ class GraphDatabase:
             self._on_create_node[id] = fn
         return id
 
+    def on_delete_node(self, fn, id=None):
+        id = id if id else uuid.uuid1()
+        if id in self._on_delete_node and fn is None:
+            del self._on_delete_node[id]
+        else:
+            self._on_delete_node[id] = fn
+        return id
+
     def on_create_edge(self, fn, id=None):
         id = id if id else uuid.uuid1()
         if id in self._on_create_edge and fn is None:
             del self._on_create_edge[id]
         else:
             self._on_create_edge[id] = fn
+        return id
+
+    def on_delete_edge(self, fn, id=None):
+        id = id if id else uuid.uuid1()
+        if id in self._on_delete_edge and fn is None:
+            del self._on_delete_edge[id]
+        else:
+            self._on_delete_edge[id] = fn
         return id
 
     @GraphModifyLock
