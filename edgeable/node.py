@@ -55,14 +55,18 @@ class GraphNode:
             edge = GraphEdge(
                 db=self._db, source=self, destination=destination, properties=properties
             )
-            self._edges[destination.get_id()] = edge
-
-            if not directed:
-                destination.attach(self, properties, directed=False)
 
             # run create edge callbacks
+            cancel = False
             for fn in self._db._on_create_edge.values():
-                fn(edge)
+                cancel = cancel or (False == fn(edge))
+
+            if not cancel:
+                self._edges[destination.get_id()] = edge
+
+                if not directed:
+                    destination.attach(self, properties, directed=False)
+
         else:
             self._edges[destination.get_id()]._properties = {
                 **self._edges[destination.get_id()]._properties,
@@ -87,20 +91,18 @@ class GraphNode:
             if was_connected:
                 logger.info("detach '%s' from '%s'", self._id, destination.get_id())
                 edge = self._edges[destination.get_id()]
-                del self._edges[destination.get_id()]
 
                 # run delete node callbacks
+                cancel = False
                 for fn in self._db._on_delete_edge.values():
-                    fn(edge)
+                    cancel = cancel or (False == fn(edge))
 
-            if not directed:
-                if self._id in self._db._graph[destination.get_id()]._edges:
-                    edge = self._db._graph[destination.get_id()]._edges[self._id]
-                    del self._db._graph[destination.get_id()]._edges[self._id]
+                if not cancel:
+                    del self._edges[destination.get_id()]
 
-                    # run delete node callbacks
-                    for fn in self._db._on_delete_edge.values():
-                        fn(edge)
+                    if not directed:
+                        if self._id in self._db._graph[destination.get_id()]._edges:
+                            self._db._graph[destination.get_id()].detach(self)
 
             return was_connected
         else:
@@ -116,20 +118,21 @@ class GraphNode:
         """Delete this node and all associated edges."""
         if self._id not in self._db._graph:
             raise RuntimeError("Node does not existing in graph")
-        self.detach()
-        del self._db._graph[self._id]
 
         # run delete node callbacks
+        cancel = False
         for fn in self._db._on_delete_node.values():
-            fn(self)
+            cancel = cancel or (False == fn(self))
+
+        if not cancel:
+            self.detach()
+            del self._db._graph[self._id]
 
     @GraphModifyLock
     def set_property(self, key, value):
         """Set a node property."""
         if type(key) is not str:
             raise RuntimeError("Key must be a string.")
-        if self._id not in self._db._graph:
-            raise RuntimeError("Node does not existing in graph")
         self._properties[key] = value
 
     @GraphModifyLock

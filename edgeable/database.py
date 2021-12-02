@@ -82,12 +82,19 @@ class GraphDatabase:
 
         if not self.has_node(id):
             logger.info("create node '%s'", id)
-            self._graph[id] = GraphNode(self, id)
-            self._graph[id]._properties = properties.copy()
+            node = GraphNode(self, id)
+            node._properties = properties.copy()
 
             # run create node event callbacks
+            cancel = False
             for fn in self._on_create_node.values():
-                fn(self._graph[id])
+                cancel = cancel or False == fn(node)
+
+            if not cancel:
+                self._graph[id] = node
+            else:
+                return None
+
         else:
             self._graph[id]._properties = {**self._graph[id]._properties, **properties}
 

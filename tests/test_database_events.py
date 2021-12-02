@@ -18,6 +18,14 @@ class TestDatabaseEvents(unittest.TestCase):
         self.assertIsNotNone(id)
         self.assertEqual(A.get_properties(), {"my_key": "my_value"})
 
+    def test_create_node_callback_cancels(self):
+
+        self.db.on_create_node(lambda node: False)
+
+        self.db.put_node("A")
+
+        self.assertFalse(self.db.has_node("A"))
+
     def test_change_create_node_callback(self):
 
         id = self.db.on_create_node(
@@ -55,6 +63,16 @@ class TestDatabaseEvents(unittest.TestCase):
         self.assertIsNotNone(id)
         self.assertEqual(A.get_edge(B).get_properties(), {"my_key": "my_value"})
 
+    def test_create_edge_callback_cancels(self):
+
+        self.db.on_create_edge(lambda node: False)
+
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+        A.attach(B)
+
+        self.assertIsNone(A.get_edge(B))
+
     def test_change_create_edge_callback(self):
 
         id = self.db.on_create_edge(
@@ -85,11 +103,19 @@ class TestDatabaseEvents(unittest.TestCase):
 
     def test_set_delete_node_callback(self):
 
-        id = self.db.on_delete_node(lambda node: self.db.put_node(node.get_id() + "2"))
+        self.db.on_delete_node(lambda node: self.db.put_node(node.get_id() + "2"))
 
         self.db.put_node("A").delete()
 
         self.assertTrue(self.db.has_node("A2"))
+
+    def test_delete_node_callback_cancels(self):
+
+        self.db.on_delete_node(lambda node: False)
+
+        self.db.put_node("A").delete()
+
+        self.assertTrue(self.db.has_node("A"))
 
     def test_change_delete_node_callback(self):
 
@@ -123,6 +149,17 @@ class TestDatabaseEvents(unittest.TestCase):
 
         self.assertIsNotNone(id)
         self.assertIsNotNone(A.get_edge(C))
+
+    def test_delete_edge_callback_cancels(self):
+        A = self.db.put_node("A")
+        B = self.db.put_node("B")
+        A.attach(B)
+
+        self.db.on_delete_edge(lambda node: False)
+
+        A.get_edge(B).delete()
+
+        self.assertIsNotNone(A.get_edge(B))
 
     def test_change_delete_edge_callback(self):
         A = self.db.put_node("A")

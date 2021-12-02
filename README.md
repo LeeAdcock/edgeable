@@ -99,6 +99,8 @@ Event callbacks can be provided that will have the opportunity to process object
 - `on_delete_node(fn, id=None)` - Sets or changes a callback that is called when a node is deleted from the graph.
 - `on_delete_edge(fn, id=None)` - Sets or changes a callback that is called when a edge is deleted from the graph.
 
+Callback functions that return a `False` value will cancel the event.
+
 ### Node Class
 The `GraphNode` class represent nodes and associated properties within the graph. Nodes can be connected through directed or non-directed edges.
 
