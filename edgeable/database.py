@@ -22,6 +22,12 @@ class GraphDatabase:
         if type(properties) is not dict:
             raise RuntimeError("Properties be a dict.")
 
+        # callbacks
+        self._on_create_node = {}
+        self._on_delete_node = {}
+        self._on_create_edge = {}
+        self._on_delete_edge = {}
+
         self._graph = {}
         self._properties = properties
         self._filename = filename
@@ -32,7 +38,7 @@ class GraphDatabase:
     def __new__(cls, *args, **kwargs):
         self = super().__new__(cls)
 
-        # callbacks
+        # callbacks, initialie for unpicked objects
         self._on_create_node = {}
         self._on_delete_node = {}
         self._on_create_edge = {}
@@ -48,6 +54,7 @@ class GraphDatabase:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.save()
 
+    @GraphReadLock
     def get_nodes(self, filter_fn=lambda node: True):
         """Return all nodes, or nodes which match the optional filter function."""
         if type(filter_fn) is not types.FunctionType:
@@ -55,6 +62,7 @@ class GraphDatabase:
 
         return [node for node in self._graph.values() if filter_fn(node)]
 
+    @GraphReadLock
     def get_edges(
         self, edge_filter_fn=lambda edge: True, node_filter_fn=lambda node: True
     ):
