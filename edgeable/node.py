@@ -1,4 +1,4 @@
-from edgeable import GraphEdge, GraphModifyLock
+from edgeable import GraphEdge, GraphModifyLock, GraphReadLock
 from collections import deque
 import logging
 import types
@@ -203,6 +203,7 @@ class GraphNode:
     # Returns a collection of less-optimal routes. The number of
     # these returned depends on the effort to find them, provided
     # as a numeric parameter.
+    @GraphReadLock
     def find_routes_to(self, destination, effort=5):
         if type(destination) is not GraphNode:
             raise RuntimeError("Destination must be an instance of GraphNode.")
@@ -227,6 +228,7 @@ class GraphNode:
 
     # Based on code by Eryk Kopczyński
     # https://www.python.org/doc/essays/graphs/
+    @GraphReadLock
     def find_route_to(self, destination, skip=[]):
         """Find a route across the graph from the current node to the
         destination node, returned as an array of nodes. If no route
@@ -256,6 +258,7 @@ class GraphNode:
 
         return flatten(dist[destination]) if destination in dist else None
 
+    @GraphReadLock
     def find_neighbors(self, distance=1, distance_fn=lambda edge: 1):
         """Find all neighbors the specified distance away."""
 

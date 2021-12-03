@@ -38,7 +38,7 @@ class GraphDatabase:
     def __new__(cls, *args, **kwargs):
         self = super().__new__(cls)
 
-        # callbacks, initialie for unpicked objects
+        # callbacks, initialize for unpicked objects
         self._on_create_node = {}
         self._on_delete_node = {}
         self._on_create_edge = {}
