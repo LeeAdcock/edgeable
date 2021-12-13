@@ -94,7 +94,7 @@ class GraphDatabase:
             raise RuntimeError("Node id must be a string or number.")
 
         if not self.has_node(id):
-            logger.info("create node '%s' (%s)", id, properties)
+            logger.debug("create node '%s' (%s)", id, properties)
             node = GraphNode(self, id)
             node._properties = properties.copy()
 
@@ -196,7 +196,7 @@ class GraphDatabase:
     def reload(self):
         """Reload the database from the local filesystem."""
 
-        logger.info("load from file '%s'", self._filename)
+        logger.debug("load from file '%s'", self._filename)
         with gzip.open(self._filename, "rb") as f:
             self._graph = pickle.load(f)
 
@@ -204,7 +204,7 @@ class GraphDatabase:
     def save(self):
         """Save the database to the local filesystem."""
 
-        logger.info("save to file '%s'", self._filename)
+        logger.debug("save to file '%s'", self._filename)
         temp_file = tempfile.NamedTemporaryFile(
             prefix=self._filename, dir=os.path.dirname(self._filename), delete=False
         )

@@ -49,7 +49,7 @@ class GraphNode:
 
         is_connected = destination.get_id() in self._edges
         if not is_connected:
-            logger.info(
+            logger.debug(
                 "attach '%s' -> '%s' (%s)", self._id, destination.get_id(), properties
             )
             edge = GraphEdge(
@@ -89,7 +89,7 @@ class GraphNode:
         if destination:
             was_connected = destination.get_id() in self._edges
             if was_connected:
-                logger.info("detach '%s' from '%s'", self._id, destination.get_id())
+                logger.debug("detach '%s' from '%s'", self._id, destination.get_id())
                 edge = self._edges[destination.get_id()]
 
                 # run delete node callbacks
