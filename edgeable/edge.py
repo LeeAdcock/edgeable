@@ -2,6 +2,8 @@ from edgeable import GraphModifyLock
 
 
 class GraphEdge:
+    """Class representing edges between nodes in the graph."""
+
     def __init__(self, db, destination, source, properties):
         self._db = db
         self._destination_id = destination.get_id()

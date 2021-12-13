@@ -8,6 +8,8 @@ logger = logging.getLogger("edgeable")
 
 
 class GraphNode:
+    """Class representing nodes in the graph."""
+
     def __init__(self, db, id):
         self._db = db
         self._id = id
