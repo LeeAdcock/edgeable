@@ -1,163 +1,363 @@
 <img src="https://raw.githubusercontent.com/LeeAdcock/edgeable/master/assets/logo.png" alt="Edgeable" width="300"/>
 
-*Edgeable is an easy to use, in memory, persistable graph database. It is perfect for prototyping, exploring, and quick implementation in Python applications.* The library is written completely in Python, supporting 3.10+.
+[![CI](https://github.com/LeeAdcock/edgeable/actions/workflows/ci.yml/badge.svg)](https://github.com/LeeAdcock/edgeable/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/edgeable)](https://pypi.org/project/edgeable/)
+[![Python versions](https://img.shields.io/pypi/pyversions/edgeable)](https://pypi.org/project/edgeable/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/LeeAdcock/edgeable/blob/master/LICENSE)
 
-In Edgeable, graphs are made of nodes with a string or numeric identifier and can have any number of properties. Nodes are connected by directed or non-directed edges that can also have any number of properties. Additional convenience capabilities, like route detection through the graph, are built-in. Edgeable is thread safe for multi-threaded applications (operations on a database are serialized by a re-entrant, per-database lock) and easily handles databases with tens to hundreds of thousands of nodes.
+*Edgeable is an easy to use, in memory, persistable graph database. It is perfect for prototyping, exploring, and quick implementation in Python applications.*
+
+- Nodes and edges, each with any number of properties.
+- Directed and undirected edges.
+- Shortest route and neighbor search built in.
+- Saves to a single file; reloads with one line.
+- Thread safe.
+- Pure Python, no dependencies. Requires Python 3.10 or newer.
+
+## Contents
+
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Concepts](#concepts)
+- [More examples](#more-examples)
+- [API reference](#api-reference)
+- [Persistence and file safety](#persistence-and-file-safety)
+- [Threads and performance](#threads-and-performance)
+- [Logging](#logging)
+- [Upgrading from 0.1](#upgrading-from-01)
+- [Development](#development)
+- [Resources](#resources)
 
 ## Installation
 
-The Edgeable database library can easily be installed with pip using `pip install edgeable`.
-
-## Examples
-
-### Create a graph instances and add nodes and edges
-
 ```
+pip install edgeable
+```
+
+## Quick start
+
+```python
 from edgeable import GraphDatabase
 
-graph = GraphDatabase()
-A = graph.put_node('A', {'type': 'building'})
-B = graph.put_node('B', {'type': 'classroom'})
-A.attach(B, {'relationship': 'contains'})
+# Opens campus.db if it exists, otherwise starts empty.
+# Leaving the "with" block saves the graph to that file.
+with GraphDatabase(filename="campus.db") as graph:
+    # Create nodes. The second argument is an optional dict of properties.
+    library = graph.put_node("library", {"type": "building"})
+    hall = graph.put_node("hall", {"type": "building"})
+    room = graph.put_node("room-101", {"type": "classroom"})
+
+    # Connect them. Edges are undirected unless you ask otherwise.
+    library.attach(hall, {"walk_minutes": 4})
+    hall.attach(room, {"walk_minutes": 1})
+
+    # Look things up.
+    buildings = graph.get_nodes(lambda node: node.get_property("type") == "building")
+    print(buildings)  # [library, hall]
+
+    # Find a route and nearby nodes.
+    print(library.find_route_to(room))  # [library, hall, room-101]
+    print(library.find_neighbors(distance=1))  # [hall]
 ```
 
-### Loading from a csv file of edges
+The next time the program runs, `GraphDatabase(filename="campus.db")` loads the saved graph.
 
+## Concepts
+
+### Nodes
+
+A node has an identifier and a dict of properties. `put_node` creates the node, or returns the existing node with that identifier.
+
+Identifiers are strings or numbers. Prefer strings or integers: numbers that compare equal are the same identifier, so `1`, `1.0` and `True` all name one node.
+
+### Edges are stored per direction
+
+An edge leads from a source node to a destination node. An undirected connection is stored as **two edges**, one in each direction.
+
+- `a.attach(b)` creates both `a -> b` and `b -> a`.
+- `a.attach(b, directed=True)` creates only `a -> b`.
+
+This has two visible effects:
+
+- `get_edge_count()` and `get_edges()` count each direction, so one undirected connection counts as two edges.
+- Each direction has its own properties. Methods that change an edge keep both directions in step unless you pass `directed=True`. The one exception is `delete_property`, which only changes the edge it is called on.
+
+### Properties
+
+The database, every node and every edge each have their own properties. Keys must be strings. `get_property` returns `None` for a key that is not set.
+
+### Node objects can go stale
+
+A `GraphNode` object is only valid while it is the node stored in the graph. After `node.delete()` or `graph.reload()`, node objects you were holding are stale, and calling `attach`, `detach` or `delete` on them raises `RuntimeError`. Fetch the node again with `get_node`.
+
+### Errors
+
+Invalid arguments raise `RuntimeError`, for example a property key that is not a string, or a destination that is not a node in the same graph.
+
+## More examples
+
+The examples below continue from the quick start.
+
+### Directed edges and edge properties
+
+```python
+graph = GraphDatabase(filename="campus.db")
+library = graph.get_node("library")
+hall = graph.get_node("hall")
+annex = graph.put_node("annex")
+
+# A one-way connection.
+hall.attach(annex, {"walk_minutes": 2}, directed=True)
+print(hall.has_edge(annex), annex.has_edge(hall))  # True False
+
+# Read and change the properties of an edge.
+edge = library.get_edge(hall)
+print(edge.get_property("walk_minutes"))  # 4
+edge.set_property("covered", True)  # set on both directions
+print(hall.get_edge(library).get_property("covered"))  # True
 ```
-from edgeable import GraphDatabase
+
+### Weighted neighbors
+
+```python
+# Everything within a five minute walk of the library, nearest first.
+nearby = library.find_neighbors(
+    distance=5,
+    distance_fn=lambda edge: edge.get_property("walk_minutes"),
+)
+print(nearby)  # [hall, room-101]
+```
+
+### Routes that avoid a node
+
+```python
+room = graph.get_node("room-101")
+print(library.find_route_to(room, skip=[hall]))  # None: the only route is through the hall
+```
+
+### Callbacks
+
+```python
+def no_orphans(node):
+    # Returning False cancels the event.
+    if node.get_edges():
+        print("refusing to delete", node)
+        return False
+
+
+callback_id = graph.on_delete_node(no_orphans)
+print(hall.delete())  # prints "refusing to delete hall", then False
+
+graph.on_delete_node(None, id=callback_id)  # remove the callback
+```
+
+### Load edges from a CSV file
+
+```python
 import csv
 
-graph = GraphDatabase()
-with open('edges.csv') as csvfile:
-    reader = csv.reader(csvfile)
-    for row in reader:
-        node_a = graph.put_node(row[0].strip())
-        node_b = graph.put_node(row[1].strip())
-        node_a.attach(node_b)
+with open("edges.csv", "w", newline="") as csvfile:
+    csv.writer(csvfile).writerows([["a", "b"], ["b", "c"]])
+
+with open("edges.csv", newline="") as csvfile:
+    for source, destination in csv.reader(csvfile):
+        graph.put_node(source.strip()).attach(graph.put_node(destination.strip()))
 ```
 
-### Write a csv file of edges
+### Write edges to a CSV file
 
-```
-with open('edges.csv', 'w') as csvfile:
+An undirected connection is two edges, so it is written as two rows. To write each connection once, skip one of the directions.
+
+```python
+with open("edges.csv", "w", newline="") as csvfile:
     writer = csv.writer(csvfile)
-    for node in graph.get_nodes():
-        for edge in node.get_edges():
-            writer.writerow([
-                edge.get_source().get_id(), 
-                edge.get_destination().get_id()
-            ])
+    for edge in graph.get_edges():
+        source = edge.get_source().get_id()
+        destination = edge.get_destination().get_id()
+        reverse_exists = edge.get_destination().has_edge(edge.get_source())
+        if not reverse_exists or source <= destination:
+            writer.writerow([source, destination])
 ```
 
-## Classes
+## API reference
 
-### Graph Class
-The `GraphDatabase` class represents the entire graph. Instances of `GraphDatabase` provide the ability to retrieve and creates nodes, as well as save or load from the file system.
+### GraphDatabase
 
-##### Graph Constructor
-The `GraphDatabase(filename="graph.db", properties=None)` constructor is used to create a new graph database instance. The file name used to persist the database can optionally be ovewritten. If a persisted database file already exists, it will be loaded.
+`GraphDatabase(filename="graph.db", properties=None)`
 
-An optional dict of database properties can be provided. If a persisted database file is loaded, the properties stored in it are loaded first and the provided properties are then set on top of them, so a provided value replaces a loaded value with the same key.
+Creates a database. If `filename` exists it is loaded; otherwise the database starts empty. Nothing is written until `save()` is called.
 
-The `with` syntax can be used to initialize the graph and ensure it is saved once the block is exited.
+`properties` is an optional dict of database properties. When a file is loaded, its saved properties are applied first and the ones passed here are set on top.
+
+Used in a `with` statement, the database is saved when the block exits.
+
+#### Saving and loading
+
+| Method | Description |
+|---|---|
+| `save()` | Write the graph to `filename`. The directory must already exist. |
+| `reload()` | Replace the graph and database properties with the contents of the file, discarding unsaved changes. Raises `FileNotFoundError` if the file does not exist. Callbacks stay registered. |
+
+#### Nodes and edges
+
+| Method | Description |
+|---|---|
+| `put_node(id, properties={})` | Create the node, or update the existing node by merging in `properties`. Returns the `GraphNode`, or `None` if a create callback cancelled it. |
+| `get_node(id)` | Return the `GraphNode`, or `None` if it does not exist. |
+| `has_node(id)` | Return whether the node exists. |
+| `get_nodes(filter_fn=lambda node: True)` | Return a list of all nodes, or those for which `filter_fn(node)` is true. |
+| `get_edges(edge_filter_fn=lambda edge: True, node_filter_fn=lambda node: True)` | Return a list of all edges. `edge_filter_fn(edge)` selects edges; `node_filter_fn(node)` selects which source nodes to take edges from. |
+| `get_node_count()` | Return the number of nodes. |
+| `get_edge_count()` | Return the number of edges, counting each direction. |
+
+Filters can be any callable. Leave a filter out to match everything.
+
+#### Database properties
+
+| Method | Description |
+|---|---|
+| `set_property(key, value)` | Set one property. |
+| `set_properties(properties)` | Set several properties from a dict. Other properties are kept. |
+| `get_property(key)` | Return the value, or `None` if it is not set. |
+| `get_properties()` | Return a copy of all properties as a dict. |
+| `has_property(key)` | Return whether the property is set. |
+| `delete_property(key)` | Remove the property. Returns its previous value, or `None`. |
+
+Nodes and edges have the same six property methods.
+
+#### Callbacks
+
+| Method | Called when |
+|---|---|
+| `on_create_node(fn, id=None)` | A node is about to be created. `fn(node)`. |
+| `on_delete_node(fn, id=None)` | A node is about to be deleted. `fn(node)`. |
+| `on_create_edge(fn, id=None)` | An edge is about to be created. `fn(edge)`. |
+| `on_delete_edge(fn, id=None)` | An edge is about to be deleted. `fn(edge)`. |
+
+- Each call returns the callback's id. Pass your own `id` to choose it.
+- Register again with the same `id` to replace a callback. Pass `fn=None` with the `id` to remove it.
+- A callback that returns exactly `False` cancels the event. Any other return value, including `None` and `0`, does not.
+- Every registered callback is called, even after one has cancelled.
+- Edge callbacks are called once per direction. An undirected `attach` or `detach` is all-or-nothing: if either direction is cancelled, neither changes.
+- When a node is deleted, `on_delete_edge` callbacks are called for each of its edges but cannot cancel.
+- Callbacks may read and change the graph.
+- Callbacks are not saved with the database.
+
+### GraphNode
+
+Nodes are created with `GraphDatabase.put_node`, not directly.
+
+| Method | Description |
+|---|---|
+| `get_id()` | Return the node's identifier. |
+| `delete()` | Delete the node and every edge to or from it. Returns `True`, or `False` if a callback cancelled it. |
+
+#### Edges
+
+| Method | Description |
+|---|---|
+| `attach(destination, properties=None, directed=False)` | Connect this node to `destination`. `properties` are set on the edge whether it is new or already exists. Returns `True` if an edge was created, `False` if nothing new was created or a callback cancelled it. Attaching a node to itself does nothing. |
+| `detach(destination=None, directed=False)` | Remove the connection to `destination`, or to every node if no destination is given. With `directed=True` only the edge leading from this node is removed. Returns whether any edge was removed. |
+| `get_edges(filter_fn=lambda edge: True)` | Return a list of the edges leading from this node, or those for which `filter_fn(edge)` is true. |
+| `get_edge(destination)` | Return the `GraphEdge` leading to `destination`, or `None`. |
+| `has_edge(destination)` | Return whether an edge leads to `destination`. |
+
+#### Routes and neighbors
+
+| Method | Description |
+|---|---|
+| `find_route_to(destination, skip=None)` | Return a shortest route, by number of edges, as a list of nodes from this node to `destination`. Returns `None` if there is no route. Nodes in the optional `skip` list are not travelled through. |
+| `find_routes_to(destination, effort=5)` | Return a list of alternative routes, shortest first. After the shortest route, the search repeats while avoiding nodes used by routes already found. `effort` is the most nodes that may be avoided at once: higher values find more, less direct routes and take longer. |
+| `find_neighbors(distance=1, distance_fn=lambda edge: 1)` | Return a list of the nodes within `distance` of this node, nearest first, not including this node. Each edge counts as 1 unless `distance_fn(edge)` returns another non-negative number. |
+
+Routes follow edge directions.
+
+### GraphEdge
+
+Edges are created with `GraphNode.attach`, not directly.
+
+| Method | Description |
+|---|---|
+| `get_source()` | Return the node this edge leads from. |
+| `get_destination()` | Return the node this edge leads to. |
+| `delete(directed=False)` | Delete the edge. The reverse edge is also deleted unless `directed=True`. Returns whether an edge was removed. |
+| `set_property(key, value, directed=False)` | Set a property. It is also set on the reverse edge, if there is one, unless `directed=True`. |
+| `set_properties(properties, directed=False)` | Set several properties, with the same mirroring. |
+| `get_property(key)`, `get_properties()`, `has_property(key)` | As for database properties. |
+| `delete_property(key)` | Remove the property from this edge only. Returns its previous value, or `None`. |
+
+## Persistence and file safety
+
+Nodes, edges, their properties and the database properties are saved. Callbacks are not.
+
+`save()` writes to a temporary file in the same directory and then replaces the database file, so an interrupted save does not corrupt the existing file.
+
+### Supported property values
+
+Property values must be built from these types to be saved:
+
+- `None`, `bool`, `int`, `float`, `complex`, `str`, `bytes`, `bytearray`
+- `list`, `tuple`, `dict`, `set`, `frozenset`, `range`, `slice`
+- `datetime.datetime`, `datetime.date`, `datetime.time`, `datetime.timedelta`, `datetime.timezone`
+- `decimal.Decimal`, `fractions.Fraction`, `uuid.UUID`
+- `collections.OrderedDict`, `collections.deque`, `collections.Counter`
+
+Other values, such as instances of your own classes, can be held in memory, but `save()` raises `pickle.PicklingError` for them and leaves the existing file untouched.
+
+### Only load files you trust
+
+The file is a gzip compressed pickle. When loading, anything other than Edgeable's own classes and the types above is refused with `pickle.UnpicklingError`, so loading a file does not run code embedded in it.
+
+This is a safeguard, not a guarantee. A crafted file can still contain a misleading or very large graph.
+
+## Threads and performance
+
+Every operation on a database takes that database's lock, so a database can be shared between threads. The lock is re-entrant: callbacks and filter functions can call back into the database. Operations on one database run one at a time; separate databases do not block each other.
+
+A sequence of calls is not atomic. If one thread calls `reload()` between another thread's `put_node` and `attach`, the second thread's node object is stale and `attach` raises `RuntimeError`.
+
+As a guide, on one cloud development machine a graph of 100,000 nodes and about 230,000 edges took under a second to build, about 5 seconds to save and about 2 seconds to load, in a 1.7 MB file.
+
+- `save()` rewrites the whole file every time, so it is the slowest operation on a large graph.
+- `node.delete()` checks every node for edges leading to the deleted node.
+- `find_routes_to` gets slower quickly as `effort` rises on a densely connected graph.
+
+## Logging
+
+Edgeable logs node and edge changes, saves and loads at debug level to the `edgeable` logger. It does not configure logging, so nothing is shown unless your application enables it:
+
+```python
+import logging
+
+logging.basicConfig()
+logging.getLogger("edgeable").setLevel(logging.DEBUG)
+```
+
+## Upgrading from 0.1
+
+- Python 3.10 or newer is required.
+- Files written by 0.1 still load, and are rewritten in the new format on the next `save()`. Version 0.1 cannot read files written by 0.2.
+- Property values are limited to the [supported types](#supported-property-values).
+- Only a callback returning exactly `False` cancels an event.
+
+See [CHANGELOG.md](https://github.com/LeeAdcock/edgeable/blob/master/CHANGELOG.md) for the full list.
+
+## Development
 
 ```
-from edgeable import GraphDatabase
-
-with GraphDatabase(filename="mygraph.db") as graph:
-    A = graph.put_node('A', {'type': 'building'})
-    B = graph.put_node('B', {'type': 'classroom'})
-    A.attach(B, {'relationship': 'contains'})
+pip install -e ".[dev]"
+make test     # run the tests with coverage
+make lint     # format with black
+make build    # build the sdist and wheel
 ```
 
-##### Graph Persistance
-- `reload()` - Reload the graph from the file system. The persisted file is loaded automatically when the `GraphDatabase` instance is initialized, calling `reload()` is only neccessary to reload it, overwriting any changes to nodes, edges and database properties. Registered callbacks are kept, and apply to the reloaded nodes and edges.
-- `save()` - Save the graph to the file system. When using the `with` syntax, this is called automatically. Save operations are done in a way to be thread-safe and avoid corruption if the application terminates during a write: the content is written and synced to a temporary file in the same directory, which then replaces the database file. The directory must already exist.
+Every push and pull request runs the linter and the tests on Python 3.10 to 3.14.
 
-Nodes, edges, their properties and the database properties are persisted. Callbacks are not.
-
-Property values (on the database, nodes and edges) must be made up of the following types to be persisted: `None`, `bool`, `int`, `float`, `complex`, `str`, `bytes`, `bytearray`, `list`, `tuple`, `dict`, `set`, `frozenset`, `range`, `slice`, `datetime.datetime`, `datetime.date`, `datetime.time`, `datetime.timedelta`, `datetime.timezone`, `decimal.Decimal`, `fractions.Fraction`, `uuid.UUID`, `collections.OrderedDict`, `collections.deque` and `collections.Counter`. Other values, such as instances of your own classes, can be held in memory but `save()` raises `pickle.PicklingError` for them and leaves the existing file untouched.
-
-The file is a gzip compressed pickle. When loading, anything other than Edgeable's own classes and the types above is refused with `pickle.UnpicklingError` rather than imported, so loading a file does not run code embedded in it. This is a safeguard and not a guarantee: a crafted file can still contain a misleading or very large graph, so only load database files from sources you trust. Files written by earlier releases can still be loaded, and are written in the current format on the next `save()`; earlier releases cannot read files in the current format.
-
-##### Graph Nodes and Edges
-
-- `put_node(id, properties={})` - Creates or retrieves the instance of `GraphNode` with the provided identifier. The optionally provided properties are set or updated on the node.
-- `has_node(id)` - Taking a node identifier, returns a boolean indicating whether a node with that identifier exists in the database.
-- `get_node(id)` - Taking a node identifier, return an instance of type `GraphNode` if it exists in the database. Returns `None` otherwise.
-- `get_nodes(filter_fn=lambda node: True)` - Retrieve a list of `GraphNode` instances from the database. If the optional filter function is not provided, all nodes are returned, otherwise the filter function is used to return only matching nodes.
-- `get_edges(edge_filter_fn=lambda edge: True, node_filter_fn=lambda node: True)` - Retrieve a list of `GraphEdge` instances from the database. If the optional filter functions are not provided, all edges are returned, otherwise only edges matching `edge_filter_fn` whose source node matches `node_filter_fn` are returned. Filters can be any callable.
-- `get_node_count()` - Return the number of nodes in the database.
-- `get_edge_count()` - Return the number of edges in the database.
-
-##### Graph Properties
-Database properties are saved to and loaded from the file system together with the graph. Property keys must be strings.
-
-- `set_property(key, value)` - Set a property on the database with the provided key and value.
-- `set_properties(properties)` - Provide a dict to set multiple properites on the database.
-- `get_property(key)` - Retrieve the database's property value for the provided key.
-- `get_properties()` - Retrieve a `dict` containing all properties set on the database.
-- `has_property(key)` - Returns a boolean indicating whether the property key is defined.
-- `delete_property(key)` - Removes a property.
-
-##### Graph Callbacks
-
-Event callbacks can be provided that will have the opportunity to process objects in the graph. Multiple callbacks can be defined for an event type. Each callbacks has an identifier, this can be specified when created or one will automatically be generated and returned. The id can be later used to overwrite or remove (set to `None`) the callback. Removing an id which is not registered does nothing. Callbacks can be any callable; anything else raises a `RuntimeError`.
-
-- `on_create_node(fn, id=None)` - Sets or changes a callback that is called when a node is added to the graph.
-- `on_create_edge(fn, id=None)` - Sets or changes a callback that is called when a edge is added to the graph.
-- `on_delete_node(fn, id=None)` - Sets or changes a callback that is called when a node is deleted from the graph.
-- `on_delete_edge(fn, id=None)` - Sets or changes a callback that is called when a edge is deleted from the graph.
-
-Callback functions that return `False` will cancel the event; any other return value, including `None` and `0`, does not. Every callback registered for an event is called, even after one of them has cancelled it. Callbacks, like filter functions, can themselves read and modify the graph. Callback functions are not persisted with the database.
-
-### Node Class
-The `GraphNode` class represent nodes and associated properties within the graph. Nodes can be connected through directed or non-directed edges.
-
-- `delete()` - Delete the node from the database, removing any associated edges.
-
-##### Node Edges
-- `attach(destination, properties={}, directed=False)` - Attach the current node to the destination node with a new edge. The optionally provided properties will be set on the edge, whether it exists or is created new. The releationship will be nondirectional unless `directed` is set to `True`. The method returns a boolean indicating if a new edge was created between the nodes.
-- `detach(destination=None, directed=False)` - Detach the current node from the destination node, removing any connecting edge. If no destination is provided, all attached nodes are detached. If `directed` is set to `True`, then the edge is only removed in the current direction, any edge in the other directions is untouched. The method returns a boolean indicating if any edges were removed.
-- `get_edges(filter_fn=lambda edge: True)` - Retrieve a list of `GraphEdge` instances from the database. If the optional filter function is not provided, all edges for the node are returned, otherwise the filter function is used to return only matching edges.
-- `get_edge(destination)` - Retrieve the edge that leads from the current node to the provided destination node.
-- `has_edge(destination)` - Returns a boolean indicating whether there is an edge from the current node to the destination node.
-
-##### Node Properties
-- `set_property(key, value)` - Set a property on the node with the provided key and value.
-- `set_properties(properties)` - Provide a dict to set multiple properites on the node.
-- `get_property(key)` - Retrieve the node's property value for the provided key.
-- `get_properties()` - Retrieve a `dict` containing all properties set on the node.
-- `has_property(key)` - Returns a boolean indicating whether the property key is defined.
-- `delete_property(key)` - Removes a property.
-
-##### Node Routes
-- `find_route_to(end, skip=[])` - Find a shortest route (by number of edges) from the current node to the `end` node, returned as a list of `GraphNode` instances starting with the current node and ending with `end`. Returns `None` if there is no route. Nodes in the optional `skip` list are not travelled through.
-- `find_routes_to(end, effort=5)` - Find alternative routes from the current node to the `end` node, returned as a list of routes with the shortest first. After the shortest route, further routes are found by searching again while avoiding nodes used by the routes found so far. `effort` bounds how many nodes may be avoided at once: higher values find more, less direct routes and take longer.
-
-##### Node Neighbors
-- `find_neighbors(distance=1, distance_fn=lambda edge: 1)` - Find all nodes within a specified distance. By default, each edge is considered a distance of one. A custom function can be provided to provide a custom distance calculation.
-
-### Edge Class
-The `GraphEdge` class representes the connections between `GraphNode` instances in the database. All methods assume edges are nondirected, so interactions with edges equally manipulates an edge in each direction between nodes.  This behavior can be overridden for specific calls, resulting in the creation, modification, or deletion of directional edges.
-
-- `get_destination()` - Retrieve the `GraphNode` instance that is the destination of this edge.
-- `get_source()` - Retrieve the `GraphNode` instance that is the source of this edge.
-- `delete(directed=False)` - Delete the edge from the database. If `directed` is `True` than only the edge in this direction is deleted.
-
-##### Edge Properties
-- `set_property(key, value, directed=False)` - Set a property on the node with the provided key and value. If `directed` is `True` than the property is set only on the edge in this direction.
-- `set_properties(properties, directed=False)` - Provide a dict to set multiple properites on the edge.
-- `get_property(key)` - Retrieve the node's property value for the provided key.
-- `get_properties()` - Retrieve a `dict` containing all properties set on the edge.
-- `has_property(key)` - Returns a boolean indicating whether the property key is defined.
-- `delete_property(key)` - Removes a property.
+To release, set the version in `pyproject.toml`, add a `CHANGELOG.md` entry, merge, and push a tag named `v` plus the version, for example `v0.2.1`. The release workflow publishes that tag to PyPI.
 
 ## Resources
 
-Build process: https://github.com/LeeAdcock/edgeable/actions
-
-Changelog: [CHANGELOG.md](CHANGELOG.md)
-
-PyPi: https://pypi.org/project/edgeable/
-License: [MIT](LICENSE)
+- Source and issues: https://github.com/LeeAdcock/edgeable
+- PyPI: https://pypi.org/project/edgeable/
+- Changelog: [CHANGELOG.md](https://github.com/LeeAdcock/edgeable/blob/master/CHANGELOG.md)
+- License: [MIT](https://github.com/LeeAdcock/edgeable/blob/master/LICENSE)
