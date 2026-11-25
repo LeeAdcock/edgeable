@@ -1,4 +1,4 @@
-from edgeable import GraphModifyLock
+from edgeable.threadlock import GraphModifyLock
 
 
 class GraphEdge:
@@ -19,11 +19,14 @@ class GraphEdge:
             )
         return False
 
+    def __hash__(self):
+        return hash((self._source_id, self._destination_id))
+
     def __str__(self):
-        return self._source_id + "->" + self._destination_id
+        return f"{self._source_id}->{self._destination_id}"
 
     def __repr__(self):
-        return self._source_id + "->" + self._destination_id
+        return f"{self._source_id}->{self._destination_id}"
 
     def get_destination(self):
         """Get the node which is the destination of this edge."""
@@ -56,7 +59,10 @@ class GraphEdge:
         are not removed. If directed=False the property is mirrored
         to an edge in the reverse direction."""
         if type(properties) is not dict:
-            raise RuntimeError("Key properties be a dict.")
+            raise RuntimeError("Properties must be a dict.")
+        for key in properties:
+            if type(key) is not str:
+                raise RuntimeError("Key must be a string")
         self._properties = {**self._properties, **properties}
         if not directed:
             if (
@@ -81,6 +87,8 @@ class GraphEdge:
 
     def has_property(self, key):
         """Boolean value indicating if the property is defined."""
+        if type(key) is not str:
+            raise RuntimeError("Key must be a string")
         return key in self._properties
 
     @GraphModifyLock
@@ -96,7 +104,9 @@ class GraphEdge:
     @GraphModifyLock
     def delete(self, directed=False):
         """Delete this edge between nodes. If directed=False than any edge in
-        the reverse direction is also deleted."""
-        self._db._graph[self._source_id].detach(
-            self._db._graph[self._destination_id], directed=directed
-        )
+        the reverse direction is also deleted. Returns a boolean indicating
+        if an edge was removed."""
+        source = self._db._graph.get(self._source_id)
+        if source is None:
+            return False
+        return source._detach_id(self._destination_id, directed)
