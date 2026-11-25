@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/LeeAdcock/edgeable/master/assets/logo.png" alt="Edgeable" width="300"/>
 
-*Edgeable is an easy to use, in memory, peristable graph database. It is perfect for prototyping, exploring, and quick implementation in Python applications.* The library is written completely in Python, supporting 3.6+. 
+*Edgeable is an easy to use, in memory, persistable graph database. It is perfect for prototyping, exploring, and quick implementation in Python applications.* The library is written completely in Python, supporting 3.10+.
 
 In Edgeable, graphs are made of nodes with a string or numeric identifier and can have any number of properties. Nodes are connected by directed or non-directed edges that can also have any number of properties. Additional convenience capabilities, like route detection through the graph, are built-in. Edgeable is thread safe for multi-threaded applications (operations on a database are serialized by a re-entrant, per-database lock) and easily handles databases with tens to hundreds of thousands of nodes.
 
@@ -76,7 +76,7 @@ with GraphDatabase(filename="mygraph.db") as graph:
 
 Nodes, edges, their properties and the database properties are persisted. Callbacks are not.
 
-Property values (on the database, nodes and edges) must be made up of the following types to be persisted: `None`, `bool`, `int`, `float`, `complex`, `str`, `bytes`, `bytearray`, `list`, `tuple`, `dict`, `set`, `frozenset`, `range`, `slice`, `datetime.datetime`, `datetime.date`, `datetime.time`, `datetime.timedelta`, `datetime.timezone`, `decimal.Decimal`, `fractions.Fraction`, `uuid.UUID`, `collections.OrderedDict`, `collections.deque` and `collections.Counter`. Other values, such as instances of your own classes, can be held in memory but `save()` raises `pickle.PicklingError` for them (on Python 3.8 and later) and leaves the existing file untouched.
+Property values (on the database, nodes and edges) must be made up of the following types to be persisted: `None`, `bool`, `int`, `float`, `complex`, `str`, `bytes`, `bytearray`, `list`, `tuple`, `dict`, `set`, `frozenset`, `range`, `slice`, `datetime.datetime`, `datetime.date`, `datetime.time`, `datetime.timedelta`, `datetime.timezone`, `decimal.Decimal`, `fractions.Fraction`, `uuid.UUID`, `collections.OrderedDict`, `collections.deque` and `collections.Counter`. Other values, such as instances of your own classes, can be held in memory but `save()` raises `pickle.PicklingError` for them and leaves the existing file untouched.
 
 The file is a gzip compressed pickle. When loading, anything other than Edgeable's own classes and the types above is refused with `pickle.UnpicklingError` rather than imported, so loading a file does not run code embedded in it. This is a safeguard and not a guarantee: a crafted file can still contain a misleading or very large graph, so only load database files from sources you trust. Files written by earlier releases can still be loaded, and are written in the current format on the next `save()`; earlier releases cannot read files in the current format.
 
@@ -155,6 +155,8 @@ The `GraphEdge` class representes the connections between `GraphNode` instances 
 
 ## Resources
 
-Build process: https://app.travis-ci.com/github/LeeAdcock/edgeable
+Build process: https://github.com/LeeAdcock/edgeable/actions
+
+Changelog: [CHANGELOG.md](CHANGELOG.md)
 
 PyPi: https://pypi.org/project/edgeable/

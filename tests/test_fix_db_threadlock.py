@@ -257,7 +257,15 @@ class TestThreads(_DatabaseTestCase):
             try:
                 for i in range(300):
                     name = "%s-%d" % (threading.current_thread().name, i)
-                    db.put_node(name).attach(db.put_node("hub"))
+                    # A reload() between the calls replaces every node, which
+                    # leaves the handles stale; attach then refuses them.
+                    while True:
+                        try:
+                            db.put_node(name).attach(db.put_node("hub"))
+                            break
+                        except RuntimeError as e:
+                            if "does not exist in graph" not in str(e):
+                                raise
             finally:
                 stop.set()
 
@@ -271,6 +279,7 @@ class TestThreads(_DatabaseTestCase):
             while not stop.is_set():
                 db.save()
                 db.reload()
+                time.sleep(0.001)
 
         self._run_threads([write, write, count, count, persist])
         self.assertTrue(db.has_node("hub"))
