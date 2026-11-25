@@ -1,4 +1,0 @@
-pytest
-twine
-black
-coverage

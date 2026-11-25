@@ -77,7 +77,7 @@ class _GraphPickler(pickle.Pickler):
             return _DATABASE_PERSISTENT_ID
         return None
 
-    # Called (on Python 3.8+) for everything which is not a plain None, bool,
+    # Called for everything which is not a plain None, bool,
     # int, float, str, bytes, tuple, list, dict, set, frozenset or bytearray.
     def reducer_override(self, obj):
         cls = obj if isinstance(obj, type) else type(obj)

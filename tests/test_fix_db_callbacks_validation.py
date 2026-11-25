@@ -205,9 +205,9 @@ class TestPackaging(unittest.TestCase):
         self.assertTrue(any(isinstance(h, logging.NullHandler) for h in handlers))
 
     def test_pytest_is_not_a_runtime_dependency(self):
-        with open(os.path.join(REPOSITORY, "setup.py")) as f:
-            setup = f.read()
-        self.assertNotIn("pytest", setup)
+        with open(os.path.join(REPOSITORY, "pyproject.toml")) as f:
+            lines = [line.strip() for line in f]
+        self.assertIn("dependencies = []", lines)
 
 
 if __name__ == "__main__":

@@ -1,13 +1,16 @@
-.PHONY: build deploy
+.PHONY: install build deploy lint test
+
+install :
+	@ python -m pip install -e ".[dev]"
 
 build :
-	@ python setup.py build_py sdist
+	@ rm -rf dist && python -m build
 
 deploy :
 	@ twine upload dist/*
 
 lint :
-	@ black **/*.py 
+	@ black .
 
 test :
-	@ coverage run --branch --source edgeable -m pytest ./tests/test_*.py -s -v && coverage report && coverage html
+	@ coverage run --branch --source edgeable -m pytest tests -v && coverage report && coverage html
