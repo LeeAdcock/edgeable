@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- Add the MIT license text and include it in the published packages.
+
 ## 0.2.0
 
 ### Requirements

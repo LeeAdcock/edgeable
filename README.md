@@ -160,3 +160,4 @@ Build process: https://github.com/LeeAdcock/edgeable/actions
 Changelog: [CHANGELOG.md](CHANGELOG.md)
 
 PyPi: https://pypi.org/project/edgeable/
+License: [MIT](LICENSE)
