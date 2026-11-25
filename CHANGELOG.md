@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2
+
+- Rewrite the README: quick start, concepts, more examples and a corrected
+  API reference. No library changes.
+
 ## 0.2.1
 
 - Add the MIT license text and include it in the published packages.
